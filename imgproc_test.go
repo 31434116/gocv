@@ -222,6 +222,33 @@ func TestDilate(t *testing.T) {
 	}
 }
 
+func TestDistanceTransform(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in DistanceTransform test")
+	}
+	defer img.Close()
+
+	gray := NewMat()
+	defer gray.Close()
+	CvtColor(img, &gray, ColorBGRToGray)
+
+	threshImg := NewMat()
+	defer threshImg.Close()
+	Threshold(gray, &threshImg, 25, 255, ThresholdBinary)
+
+	dest := NewMat()
+	defer dest.Close()
+
+	labels := NewMat()
+	defer labels.Close()
+
+	DistanceTransform(threshImg, &dest, &labels, DistL2, DistanceMask3, DistanceLabelCComp)
+	if dest.Empty() || dest.Rows() != img.Rows() || img.Cols() != dest.Cols() {
+		t.Error("Invalid DistanceTransform test")
+	}
+}
+
 func TestMatchTemplate(t *testing.T) {
 	imgScene := IMRead("images/face.jpg", IMReadGrayScale)
 	if imgScene.Empty() {
@@ -502,6 +529,25 @@ func TestMorphologyEx(t *testing.T) {
 	}
 }
 
+func TestMorphologyExWithParams(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in MorphologyEx test")
+	}
+	defer img.Close()
+
+	dest := NewMat()
+	defer dest.Close()
+
+	kernel := GetStructuringElement(MorphRect, image.Pt(1, 1))
+	defer kernel.Close()
+
+	MorphologyExWithParams(img, &dest, MorphOpen, kernel, 2, BorderConstant)
+	if dest.Empty() || img.Rows() != dest.Rows() || img.Cols() != dest.Cols() {
+		t.Error("Invalid MorphologyExWithParams test")
+	}
+}
+
 func TestGaussianBlur(t *testing.T) {
 	img := IMRead("images/face-detect.jpg", IMReadColor)
 	if img.Empty() {
@@ -620,6 +666,36 @@ func TestGoodFeaturesToTrackAndCornerSubPix(t *testing.T) {
 	}
 	if corners.Cols() != 1 {
 		t.Errorf("Invalid CornerSubPix test cols: %v", corners.Cols())
+	}
+}
+
+func TestGrabCut(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadGrayScale)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in GrabCut test")
+	}
+	defer img.Close()
+
+	src := NewMat()
+	defer src.Close()
+	CvtColor(img, &img, ColorRGBAToBGR)
+	img.ConvertTo(&src, MatTypeCV8UC3)
+
+	mask := NewMatWithSize(img.Rows(), img.Cols(), MatTypeCV8U)
+	defer mask.Close()
+
+	bgdModel := NewMat()
+	defer bgdModel.Close()
+	fgdModel := NewMat()
+	defer fgdModel.Close()
+
+	r := image.Rect(0, 0, 50, 50)
+
+	GrabCut(src, &mask, r, &bgdModel, &fgdModel, 1, GCEval)
+	if bgdModel.Empty() {
+		t.Error("Empty bgdmodel")
+	} else if fgdModel.Empty() {
+		t.Error("Empty fgdmodel")
 	}
 }
 
@@ -835,6 +911,26 @@ func TestHoughLinesPointSet(t *testing.T) {
 	}
 }
 
+func TestIntegral(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in Integral test")
+	}
+	defer img.Close()
+
+	sum := NewMat()
+	defer sum.Close()
+	sqSum := NewMat()
+	defer sqSum.Close()
+	tilted := NewMat()
+	defer tilted.Close()
+
+	Integral(img, &sum, &sqSum, &tilted)
+	if sum.Empty() || sqSum.Empty() || tilted.Empty() {
+		t.Error("Invalid Integral test")
+	}
+}
+
 func TestThreshold(t *testing.T) {
 	img := IMRead("images/face-detect.jpg", IMReadColor)
 	if img.Empty() {
@@ -899,6 +995,54 @@ func TestCalcHist(t *testing.T) {
 	if hist.Empty() || hist.Rows() != 256 || hist.Cols() != 1 {
 		t.Error("Invalid CalcHist test")
 	}
+}
+
+func TestCalcBackProject(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadGrayScale)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in CalcHist test")
+	}
+	defer img.Close()
+
+	hist := NewMat()
+	defer hist.Close()
+
+	backProject := NewMat()
+	defer backProject.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+
+	CalcHist([]Mat{img}, []int{0}, mask, &hist, []int{256}, []float64{0.0, 256.0}, false)
+	CalcBackProject([]Mat{img}, []int{0}, hist, &backProject, []float64{0.0, 256.0}, false)
+	if backProject.Empty() {
+		t.Error("Invalid CalcBackProject test")
+	}
+}
+
+func TestCompareHist(t *testing.T) {
+	img := IMRead("images/face-detect.jpg", IMReadGrayScale)
+	if img.Empty() {
+		t.Error("Invalid read of Mat in CompareHist test")
+	}
+	defer img.Close()
+
+	hist1 := NewMat()
+	defer hist1.Close()
+
+	hist2 := NewMat()
+	defer hist2.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+
+	CalcHist([]Mat{img}, []int{0}, mask, &hist1, []int{256}, []float64{0.0, 256.0}, false)
+	CalcHist([]Mat{img}, []int{0}, mask, &hist2, []int{256}, []float64{0.0, 256.0}, false)
+	dist := CompareHist(hist1, hist2, HistCmpCorrel)
+	if dist != 1 {
+		t.Error("Invalid CompareHist test")
+	}
+
 }
 
 func TestDrawing(t *testing.T) {
@@ -1072,6 +1216,31 @@ func TestWarpAffineWithParamsGocvLogo(t *testing.T) {
 	result := Norm(dst, NormL2)
 	if !floatEquals(round(result, 0.05), round(111111.05, 0.05)) {
 		t.Errorf("WarpAffine() = %v, want %v", round(result, 0.05), round(111111.05, 0.05))
+	}
+}
+
+func TestWatershed(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	if src.Empty() {
+		t.Error("Invalid read of Mat in Watershed test")
+	}
+	defer src.Close()
+
+	gray := NewMat()
+	defer gray.Close()
+	CvtColor(src, &gray, ColorBGRToGray)
+
+	imgThresh := NewMat()
+	defer imgThresh.Close()
+	Threshold(gray, &imgThresh, 5, 50, ThresholdOtsu+ThresholdBinary)
+
+	markers := NewMat()
+	defer markers.Close()
+	_ = ConnectedComponents(imgThresh, &markers)
+
+	Watershed(src, &markers)
+	if markers.Empty() || src.Cols() != markers.Cols() || src.Rows() != markers.Rows() {
+		t.Error("Invalid Watershed test")
 	}
 }
 

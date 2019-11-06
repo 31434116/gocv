@@ -135,6 +135,75 @@ func CalcHist(src []Mat, channels []int, mask Mat, hist *Mat, size []int, ranges
 	C.CalcHist(cMats, chansVector, mask.p, hist.p, sizeVector, rangeVector, C.bool(acc))
 }
 
+// CalcBackProject calculates the back projection of a histogram.
+//
+// For futher details, please see:
+// https://docs.opencv.org/3.4/d6/dc7/group__imgproc__hist.html#ga3a0af640716b456c3d14af8aee12e3ca
+func CalcBackProject(src []Mat, channels []int, hist Mat, backProject *Mat, ranges []float64, uniform bool) {
+	cMatArray := make([]C.Mat, len(src))
+	for i, r := range src {
+		cMatArray[i] = r.p
+	}
+
+	cMats := C.struct_Mats{
+		mats:   (*C.Mat)(&cMatArray[0]),
+		length: C.int(len(src)),
+	}
+
+	chansInts := []C.int{}
+	for _, v := range channels {
+		chansInts = append(chansInts, C.int(v))
+	}
+	chansVector := C.struct_IntVector{}
+	chansVector.val = (*C.int)(&chansInts[0])
+	chansVector.length = (C.int)(len(chansInts))
+
+	rangeFloats := []C.float{}
+	for _, v := range ranges {
+		rangeFloats = append(rangeFloats, C.float(v))
+	}
+	rangeVector := C.struct_FloatVector{}
+	rangeVector.val = (*C.float)(&rangeFloats[0])
+	rangeVector.length = (C.int)(len(rangeFloats))
+
+	C.CalcBackProject(cMats, chansVector, hist.p, backProject.p, rangeVector, C.bool(uniform))
+}
+
+// HistCompMethod is the method for Histogram comparison
+// For more information, see https://docs.opencv.org/master/d6/dc7/group__imgproc__hist.html#ga994f53817d621e2e4228fc646342d386
+type HistCompMethod int
+
+const (
+	// HistCmpCorrel calculates the Correlation
+	HistCmpCorrel HistCompMethod = 0
+
+	// HistCmpChiSqr calculates the Chi-Square
+	HistCmpChiSqr = 1
+
+	// HistCmpIntersect calculates the Intersection
+	HistCmpIntersect = 2
+
+	// HistCmpBhattacharya applies the HistCmpBhattacharya by calculating the Bhattacharya distance.
+	HistCmpBhattacharya = 3
+
+	// HistCmpHellinger applies the HistCmpBhattacharya comparison. It is a synonym to HistCmpBhattacharya.
+	HistCmpHellinger = HistCmpBhattacharya
+
+	// HistCmpChiSqrAlt applies the Alternative Chi-Square (regularly used for texture comparsion).
+	HistCmpChiSqrAlt = 4
+
+	// HistCmpKlDiv applies the Kullback-Liebler divergence comparison.
+	HistCmpKlDiv = 5
+)
+
+// CompareHist Compares two histograms.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d6/dc7/group__imgproc__hist.html#gaf4190090efa5c47cb367cf97a9a519bd
+func CompareHist(hist1 Mat, hist2 Mat, method HistCompMethod) float32 {
+	return float32(C.CompareHist(hist1.p, hist2.p, C.int(method)))
+}
+
 // BilateralFilter applies a bilateral filter to an image.
 //
 // Bilateral filtering is described here:
@@ -197,6 +266,41 @@ func SqBoxFilter(src Mat, dst *Mat, depth int, ksize image.Point) {
 //
 func Dilate(src Mat, dst *Mat, kernel Mat) {
 	C.Dilate(src.p, dst.p, kernel.p)
+}
+
+// DistanceTransformLabelTypes are the types of the DistanceTransform algorithm flag
+type DistanceTransformLabelTypes int
+
+const (
+	// DistanceLabelCComp assigns the same label to each connected component of zeros in the source image
+	// (as well as all the non-zero pixels closest to the connected component).
+	DistanceLabelCComp DistanceTransformLabelTypes = 0
+
+	// DistanceLabelPixel assigns its own label to each zero pixel (and all the non-zero pixels closest to it).
+	DistanceLabelPixel
+)
+
+// DistanceTransformMasks are the marsk sizes for distance transform
+type DistanceTransformMasks int
+
+const (
+	// DistanceMask3 is a mask of size 3
+	DistanceMask3 DistanceTransformMasks = 0
+
+	// DistanceMask5 is a mask of size 3
+	DistanceMask5
+
+	// DistanceMaskPrecise is not currently supported
+	DistanceMaskPrecise
+)
+
+// DistanceTransform Calculates the distance to the closest zero pixel for each pixel of the source image.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga8a0b7fdfcb7a13dde018988ba3a43042
+//
+func DistanceTransform(src Mat, dst *Mat, labels *Mat, distType DistanceTypes, maskSize DistanceTransformMasks, labelType DistanceTransformLabelTypes) {
+	C.DistanceTransform(src.p, dst.p, labels.p, C.int(distType), C.int(maskSize), C.int(labelType))
 }
 
 // Erode erodes an image by using a specific structuring element.
@@ -605,6 +709,19 @@ func MorphologyEx(src Mat, dst *Mat, op MorphType, kernel Mat) {
 	C.MorphologyEx(src.p, dst.p, C.int(op), kernel.p)
 }
 
+// MorphologyExWithParams performs advanced morphological transformations.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d4/d86/group__imgproc__filter.html#ga67493776e3ad1a3df63883829375201f
+//
+func MorphologyExWithParams(src Mat, dst *Mat, op MorphType, kernel Mat, iterations int, borderType BorderType) {
+	pt := C.struct_Point{
+		x: C.int(-1),
+		y: C.int(-1),
+	}
+	C.MorphologyExWithParams(src.p, dst.p, C.int(op), kernel.p, pt, C.int(iterations), C.int(borderType))
+}
+
 // MorphShape is the shape of the structuring element used for Morphing operations.
 type MorphShape int
 
@@ -802,6 +919,40 @@ func GoodFeaturesToTrack(img Mat, corners *Mat, maxCorners int, quality float64,
 	C.GoodFeaturesToTrack(img.p, corners.p, C.int(maxCorners), C.double(quality), C.double(minDist))
 }
 
+// GrabCutMode is the flag for GrabCut algorithm.
+type GrabCutMode int
+
+const (
+	// GCInitWithRect makes the function initialize the state and the mask using the provided rectangle.
+	// After that it runs the itercount iterations of the algorithm.
+	GCInitWithRect GrabCutMode = 0
+	// GCInitWithMask makes the function initialize the state using the provided mask.
+	// GCInitWithMask and GCInitWithRect can be combined.
+	// Then all the pixels outside of the ROI are automatically initialized with GC_BGD.
+	GCInitWithMask = 1
+	// GCEval means that the algorithm should just resume.
+	GCEval = 2
+	// GCEvalFreezeModel means that the algorithm should just run a single iteration of the GrabCut algorithm
+	// with the fixed model
+	GCEvalFreezeModel = 3
+)
+
+// Grabcut runs the GrabCut algorithm.
+// The function implements the GrabCut image segmentation algorithm.
+// For further details, please see:
+// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga909c1dda50efcbeaa3ce126be862b37f
+//
+func GrabCut(img Mat, mask *Mat, r image.Rectangle, bgdModel *Mat, fgdModel *Mat, iterCount int, mode GrabCutMode) {
+	cRect := C.struct_Rect{
+		x:      C.int(r.Min.X),
+		y:      C.int(r.Min.Y),
+		width:  C.int(r.Size().X),
+		height: C.int(r.Size().Y),
+	}
+
+	C.GrabCut(img.p, mask.p, cRect, bgdModel.p, fgdModel.p, C.int(iterCount), C.int(mode))
+}
+
 // HoughMode is the type for Hough transform variants.
 type HoughMode int
 
@@ -880,6 +1031,14 @@ func HoughLinesPointSet(points Mat, lines *Mat, linesMax int, threshold int,
 	C.HoughLinesPointSet(points.p, lines.p, C.int(linesMax), C.int(threshold),
 		C.double(minRho), C.double(maxRho), C.double(rhoStep),
 		C.double(minTheta), C.double(maxTheta), C.double(thetaStep))
+}
+
+// Integral calculates one or more integral images for the source image.
+// For further details, please see:
+// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga97b87bec26908237e8ba0f6e96d23e28
+//
+func Integral(src Mat, sum *Mat, sqsum *Mat, tilted *Mat) {
+	C.Integral(src.p, sum.p, sqsum.p, tilted.p)
 }
 
 // ThresholdType type of threshold operation.
@@ -1071,22 +1230,24 @@ func FillPoly(img *Mat, pts [][]image.Point, c color.RGBA) {
 	points := make([]C.struct_Points, len(pts))
 
 	for i, pt := range pts {
-		p := (*C.struct_Point)(C.malloc(C.size_t(C.sizeof_struct_Point * len(pt))))
-		defer C.free(unsafe.Pointer(p))
+		func() {
+			p := (*C.struct_Point)(C.malloc(C.size_t(C.sizeof_struct_Point * len(pt))))
+			defer C.free(unsafe.Pointer(p))
 
-		pa := getPoints(p, len(pt))
+			pa := getPoints(p, len(pt))
 
-		for j, point := range pt {
-			pa[j] = C.struct_Point{
-				x: C.int(point.X),
-				y: C.int(point.Y),
+			for j, point := range pt {
+				pa[j] = C.struct_Point{
+					x: C.int(point.X),
+					y: C.int(point.Y),
+				}
 			}
-		}
 
-		points[i] = C.struct_Points{
-			points: (*C.Point)(p),
-			length: C.int(len(pt)),
-		}
+			points[i] = C.struct_Points{
+				points: (*C.Point)(p),
+				length: C.int(len(pt)),
+			}
+		}()
 	}
 
 	cPoints := C.struct_Contours{
@@ -1281,6 +1442,14 @@ func WarpPerspective(src Mat, dst *Mat, m Mat, sz image.Point) {
 	C.WarpPerspective(src.p, dst.p, m.p, pSize)
 }
 
+// Watershed performs a marker-based image segmentation using the watershed algorithm.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d7/d1b/group__imgproc__misc.html#ga3267243e4d3f95165d55a618c65ac6e1
+func Watershed(image Mat, markers *Mat) {
+	C.Watershed(image.p, markers.p)
+}
+
 // ColormapTypes are the 12 GNU Octave/MATLAB equivalent colormaps.
 //
 // For further details, please see:
@@ -1342,22 +1511,24 @@ func DrawContours(img *Mat, contours [][]image.Point, contourIdx int, c color.RG
 	cntrs := make([]C.struct_Points, len(contours))
 
 	for i, contour := range contours {
-		p := (*C.struct_Point)(C.malloc(C.size_t(C.sizeof_struct_Point * len(contour))))
-		defer C.free(unsafe.Pointer(p))
+		func() {
+			p := (*C.struct_Point)(C.malloc(C.size_t(C.sizeof_struct_Point * len(contour))))
+			defer C.free(unsafe.Pointer(p))
 
-		pa := getPoints(p, len(contour))
+			pa := getPoints(p, len(contour))
 
-		for j, point := range contour {
-			pa[j] = C.struct_Point{
-				x: C.int(point.X),
-				y: C.int(point.Y),
+			for j, point := range contour {
+				pa[j] = C.struct_Point{
+					x: C.int(point.X),
+					y: C.int(point.Y),
+				}
 			}
-		}
 
-		cntrs[i] = C.struct_Points{
-			points: (*C.Point)(p),
-			length: C.int(len(contour)),
-		}
+			cntrs[i] = C.struct_Points{
+				points: (*C.Point)(p),
+				length: C.int(len(contour)),
+			}
+		}()
 	}
 
 	cContours := C.struct_Contours{
