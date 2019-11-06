@@ -2,10 +2,10 @@
 .PHONY: test deps download build clean astyle cmds docker
 
 # OpenCV version to use.
-OPENCV_VERSION?=4.1.1
+OPENCV_VERSION?=4.1.2
 
 # Go version to use when building Docker image
-GOVERSION?=1.12.5
+GOVERSION?=1.13.1
 
 # Temporary directory to put files into.
 TMP_DIR?=/tmp/
@@ -96,7 +96,8 @@ build_cuda:
 
 # Cleanup temporary build files.
 clean:
-	rm -rf $(TMP_DIR)opencv1
+	go clean --cache
+	rm -rf $(TMP_DIR)opencv
 
 # Do everything.
 install: deps download build sudo_install clean verify

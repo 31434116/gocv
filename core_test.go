@@ -515,10 +515,22 @@ func TestMatSqrt(t *testing.T) {
 		t.Error("TestSqrt dst should not be empty.")
 	}
 }
+
 func TestMatMean(t *testing.T) {
 	mat := NewMatWithSize(100, 100, MatTypeCV8U)
 	defer mat.Close()
 	mean := mat.Mean()
+	if mean.Val1 != 0 {
+		t.Errorf("Mat Mean incorrect Val1")
+	}
+}
+
+func TestMatMeanWithMask(t *testing.T) {
+	mat := NewMatWithSize(100, 100, MatTypeCV8U)
+	defer mat.Close()
+	mask := NewMatWithSize(100, 100, MatTypeCV8U)
+	defer mask.Close()
+	mean := mat.MeanWithMask(mask)
 	if mean.Val1 != 0 {
 		t.Errorf("Mat Mean incorrect Val1")
 	}
@@ -1825,6 +1837,40 @@ func TestMatInvert(t *testing.T) {
 	Invert(src, &dst, 0)
 	if dst.Empty() {
 		t.Error("Invert dst should not be empty.")
+	}
+}
+
+func TestKMeans(t *testing.T) {
+	src := NewMatWithSize(4, 4, MatTypeCV32F) // only implemented for symm. Mats
+	defer src.Close()
+
+	bestLabels := NewMat()
+	defer bestLabels.Close()
+
+	centers := NewMat()
+	defer centers.Close()
+
+	criteria := NewTermCriteria(Count, 10, 1.0)
+	KMeans(src, 2, &bestLabels, criteria, 2, KMeansRandomCenters, &centers)
+	if bestLabels.Empty() {
+		t.Error("bla")
+	}
+}
+
+func TestKMeansPoints(t *testing.T) {
+	points := []image.Point{
+		image.Pt(0, 0),
+		image.Pt(1, 1),
+	}
+	bestLabels := NewMat()
+	defer bestLabels.Close()
+	centers := NewMat()
+	defer centers.Close()
+
+	criteria := NewTermCriteria(Count, 10, 1.0)
+	KMeansPoints(points, 2, &bestLabels, criteria, 2, KMeansRandomCenters, &centers)
+	if bestLabels.Empty() || bestLabels.Size()[0] != len(points) {
+		t.Error("Labels is not proper")
 	}
 }
 

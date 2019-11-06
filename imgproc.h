@@ -21,6 +21,8 @@ Contour ApproxPolyDP(Contour curve, double epsilon, bool closed);
 void CvtColor(Mat src, Mat dst, int code);
 void EqualizeHist(Mat src, Mat dst);
 void CalcHist(struct Mats mats, IntVector chans, Mat mask, Mat hist, IntVector sz, FloatVector rng, bool acc);
+void CalcBackProject(struct Mats mats, IntVector chans, Mat hist, Mat backProject, FloatVector rng, bool uniform);
+double CompareHist(Mat hist1, Mat hist2, int method);
 void ConvexHull(Contour points, Mat hull, bool clockwise, bool returnPoints);
 void ConvexityDefects(Contour points, Mat hull, Mat result);
 void BilateralFilter(Mat src, Mat dst, int d, double sc, double ss);
@@ -28,6 +30,7 @@ void Blur(Mat src, Mat dst, Size ps);
 void BoxFilter(Mat src, Mat dst, int ddepth, Size ps);
 void SqBoxFilter(Mat src, Mat dst, int ddepth, Size ps);
 void Dilate(Mat src, Mat dst, Mat kernel);
+void DistanceTransform(Mat src, Mat dst, Mat labels, int distanceType, int maskSize, int labelType);
 void Erode(Mat src, Mat dst, Mat kernel);
 void MatchTemplate(Mat image, Mat templ, Mat result, int method, Mat mask);
 struct Moment Moments(Mat src, bool binaryImage);
@@ -49,11 +52,13 @@ void Scharr(Mat src, Mat dst, int dDepth, int dx, int dy, double scale, double d
 Mat GetStructuringElement(int shape, Size ksize);
 Scalar MorphologyDefaultBorderValue();
 void MorphologyEx(Mat src, Mat dst, int op, Mat kernel);
+void MorphologyExWithParams(Mat src, Mat dst, int op, Mat kernel, Point pt, int iterations, int borderType);
 void MedianBlur(Mat src, Mat dst, int ksize);
 
 void Canny(Mat src, Mat edges, double t1, double t2);
 void CornerSubPix(Mat img, Mat corners, Size winSize, Size zeroZone, TermCriteria criteria);
 void GoodFeaturesToTrack(Mat img, Mat corners, int maxCorners, double quality, double minDist);
+void GrabCut(Mat img, Mat mask, Rect rect, Mat bgdModel, Mat fgdModel, int iterCount, int mode);
 void HoughCircles(Mat src, Mat circles, int method, double dp, double minDist);
 void HoughCirclesWithParams(Mat src, Mat circles, int method, double dp, double minDist,
                             double param1, double param2, int minRadius, int maxRadius);
@@ -63,6 +68,7 @@ void HoughLinesPWithParams(Mat src, Mat lines, double rho, double theta, int thr
 void HoughLinesPointSet(Mat points, Mat lines, int lines_max, int threshold,
                         double min_rho, double  max_rho, double rho_step,
                         double min_theta, double max_theta, double theta_step);
+void Integral(Mat src, Mat sum, Mat sqsum, Mat tilted);
 void Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ);
 void AdaptiveThreshold(Mat src, Mat dst, double maxValue, int adaptiveTyp, int typ, int blockSize,
                        double c);
@@ -83,6 +89,7 @@ void WarpAffine(Mat src, Mat dst, Mat rot_mat, Size dsize);
 void WarpAffineWithParams(Mat src, Mat dst, Mat rot_mat, Size dsize, int flags, int borderMode,
                           Scalar borderValue);
 void WarpPerspective(Mat src, Mat dst, Mat m, Size dsize);
+void Watershed(Mat image, Mat markers);
 void ApplyColorMap(Mat src, Mat dst, int colormap);
 void ApplyCustomColorMap(Mat src, Mat dst, Mat colormap);
 Mat GetPerspectiveTransform(Contour src, Contour dst);

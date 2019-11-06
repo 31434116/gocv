@@ -68,6 +68,33 @@ void CalcHist(struct Mats mats, IntVector chans, Mat mask, Mat hist, IntVector s
         cv::calcHist(images, channels, *mask, *hist, histSize, ranges, acc);
 }
 
+void CalcBackProject(struct Mats mats, IntVector chans, Mat hist, Mat backProject, FloatVector rng, bool uniform){
+        std::vector<cv::Mat> images;
+
+        for (int i = 0; i < mats.length; ++i) {
+            images.push_back(*mats.mats[i]);
+        }
+
+        std::vector<int> channels;
+        for (int i = 0, *v = chans.val; i < chans.length; ++v, ++i) {
+            channels.push_back(*v);
+        }
+
+        std::vector<float> ranges;
+
+        float* f;
+        int i;
+        for (i = 0, f = rng.val; i < rng.length; ++f, ++i) {
+            ranges.push_back(*f);
+        }
+
+        cv::calcBackProject(images, channels, *hist, *backProject, ranges, uniform);
+}
+
+double CompareHist(Mat hist1, Mat hist2, int method) {
+    return cv::compareHist(*hist1, *hist2, method);
+}
+
 void ConvexHull(Contour points, Mat hull, bool clockwise, bool returnPoints) {
     std::vector<cv::Point> pts;
 
@@ -109,6 +136,10 @@ void SqBoxFilter(Mat src, Mat dst, int ddepth, Size ps) {
 
 void Dilate(Mat src, Mat dst, Mat kernel) {
     cv::dilate(*src, *dst, *kernel);
+}
+
+void DistanceTransform(Mat src, Mat dst, Mat labels, int distanceType, int maskSize, int labelType) {
+    cv::distanceTransform(*src, *dst, *labels, distanceType, maskSize, labelType);
 }
 
 void Erode(Mat src, Mat dst, Mat kernel) {
@@ -254,6 +285,11 @@ void MorphologyEx(Mat src, Mat dst, int op, Mat kernel) {
     cv::morphologyEx(*src, *dst, op, *kernel);
 }
 
+void MorphologyExWithParams(Mat src, Mat dst, int op, Mat kernel, Point pt, int iterations, int borderType) {
+    cv::Point pt1(pt.x, pt.y);
+    cv::morphologyEx(*src, *dst, op, *kernel, pt1, iterations, borderType);
+}
+
 void GaussianBlur(Mat src, Mat dst, Size ps, double sX, double sY, int bt) {
     cv::Size sz(ps.width, ps.height);
     cv::GaussianBlur(*src, *dst, sz, sX, sY, bt);
@@ -287,6 +323,11 @@ void GoodFeaturesToTrack(Mat img, Mat corners, int maxCorners, double quality, d
     cv::goodFeaturesToTrack(*img, *corners, maxCorners, quality, minDist);
 }
 
+void GrabCut(Mat img, Mat mask, Rect r, Mat bgdModel, Mat fgdModel, int iterCount, int mode) {
+    cv::Rect cvRect = cv::Rect(r.x, r.y, r.width, r.height);
+    cv::grabCut(*img, *mask, cvRect, *bgdModel, *fgdModel, iterCount, mode);
+}
+
 void HoughCircles(Mat src, Mat circles, int method, double dp, double minDist) {
     cv::HoughCircles(*src, *circles, method, dp, minDist);
 }
@@ -313,6 +354,10 @@ void HoughLinesPointSet(Mat points, Mat lines, int linesMax, int threshold,
                         double minTheta, double maxTheta, double thetaStep) {
     cv::HoughLinesPointSet(*points, *lines, linesMax, threshold,
                            minRho, maxRho, rhoStep, minTheta, maxTheta, thetaStep );
+}
+
+void Integral(Mat src, Mat sum, Mat sqsum, Mat tilted) {
+    cv::integral(*src, *sum, *sqsum, *tilted);
 }
 
 void Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ) {
@@ -426,6 +471,10 @@ void WarpAffineWithParams(Mat src, Mat dst, Mat rot_mat, Size dsize, int flags, 
 void WarpPerspective(Mat src, Mat dst, Mat m, Size dsize) {
     cv::Size sz(dsize.width, dsize.height);
     cv::warpPerspective(*src, *dst, *m, sz);
+}
+
+void Watershed(Mat image, Mat markers) {
+    cv::watershed(*image, *markers);
 }
 
 void ApplyColorMap(Mat src, Mat dst, int colormap) {
