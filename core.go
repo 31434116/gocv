@@ -1985,3 +1985,4 @@ func (m *Mat) ColRange(start, end int) Mat {
 // add by yoda.guo
 func SimilarityTransform(src Mat, dst Mat) (ret Mat) {
 	return newMat(C.Mat_SimilarityTransform(src.p, dst.p))
+}
