@@ -373,6 +373,30 @@ func TestMinAreaRect(t *testing.T) {
 	}
 }
 
+func TestFitEllipse(t *testing.T) {
+	src := []image.Point{
+		image.Pt(1, 1),
+		image.Pt(0, 1),
+		image.Pt(0, 2),
+		image.Pt(1, 3),
+		image.Pt(2, 3),
+		image.Pt(4, 2),
+		image.Pt(4, 1),
+		image.Pt(0, 3),
+		image.Pt(0, 2),
+	}
+	rect := FitEllipse(src)
+	if rect.Center.X != 2 {
+		t.Errorf("TestFitEllipse(): unexpected center.X = %v, want = %v", rect.Center.X, 2)
+	}
+	if rect.Center.Y != 2 {
+		t.Errorf("TestFitEllipse(): unexpected center.Y = %v, want = %v", rect.Center.Y, 2)
+	}
+	if rect.Angle != 78.60807800292969 {
+		t.Errorf("TestFitEllipse(): unexpected angle = %v, want = %v", rect.Angle, 78.60807800292969)
+	}
+}
+
 func TestFindContours(t *testing.T) {
 	img := IMRead("images/face-detect.jpg", IMReadGrayScale)
 	if img.Empty() {
@@ -606,7 +630,7 @@ func TestMedianBlur(t *testing.T) {
 	dest := NewMat()
 	defer dest.Close()
 
-	MedianBlur(img, &dest, 1)
+	MedianBlur(img, &dest, 3)
 	if dest.Empty() || img.Rows() != dest.Rows() || img.Cols() != dest.Cols() {
 		t.Error("Invalid MedianBlur test")
 	}
@@ -757,7 +781,8 @@ func TestHoughLines(t *testing.T) {
 	if dest.Empty() {
 		t.Error("Empty HoughLines test")
 	}
-	if dest.Rows() != 10411 {
+	rowsDiff := dest.Rows() - 10411
+	if rowsDiff > 2 || rowsDiff < 0 {
 		t.Errorf("Invalid HoughLines test rows: %v", dest.Rows())
 	}
 	if dest.Cols() != 1 {
@@ -1086,6 +1111,20 @@ func TestPutText(t *testing.T) {
 		t.Error("Error in PutText test")
 	}
 }
+func TestPutTextWithParams(t *testing.T) {
+	img := NewMatWithSize(150, 150, MatTypeCV8U)
+	if img.Empty() {
+		t.Error("Invalid Mat in IMRead")
+	}
+	defer img.Close()
+
+	pt := image.Pt(10, 10)
+	PutTextWithParams(&img, "Testing", pt, FontHersheyPlain, 1.2, color.RGBA{255, 255, 255, 0}, 2, LineAA, false)
+
+	if img.Empty() {
+		t.Error("Error in PutText test")
+	}
+}
 
 func TestResize(t *testing.T) {
 	src := IMRead("images/gocvlogo.jpg", IMReadColor)
@@ -1105,6 +1144,22 @@ func TestResize(t *testing.T) {
 	Resize(src, &dst, image.Pt(440, 377), 0, 0, InterpolationCubic)
 	if dst.Cols() != 440 || dst.Rows() != 377 {
 		t.Errorf("Expected dst size of 440x377 got %dx%d", dst.Cols(), dst.Rows())
+	}
+}
+
+func TestGetRectSubPix(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadColor)
+	if src.Empty() {
+		t.Error("Invalid read of Mat in Resize test")
+	}
+	defer src.Close()
+
+	dst := NewMat()
+	defer dst.Close()
+
+	GetRectSubPix(src, image.Point{20, 30}, image.Point{200, 172}, &dst)
+	if dst.Cols() != 20 || dst.Rows() != 30 {
+		t.Errorf("Expected dst size of 20x30 got %dx%d", dst.Cols(), dst.Rows())
 	}
 }
 
@@ -1216,6 +1271,13 @@ func TestWarpAffineWithParamsGocvLogo(t *testing.T) {
 	result := Norm(dst, NormL2)
 	if !floatEquals(round(result, 0.05), round(111111.05, 0.05)) {
 		t.Errorf("WarpAffine() = %v, want %v", round(result, 0.05), round(111111.05, 0.05))
+	}
+}
+
+func TestClipLine(t *testing.T) {
+
+	if ok := ClipLine(image.Point{20, 20}, image.Point{5, 5}, image.Point{5, 5}); !ok {
+		t.Error("ClipLine(): is false")
 	}
 }
 
@@ -1489,6 +1551,20 @@ func TestLogPolar(t *testing.T) {
 	}
 }
 
+func TestLinearPolar(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := src.Clone()
+	defer dst.Close()
+
+	LinearPolar(src, &dst, image.Pt(22, 22), 1, InterpolationDefault)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("LinearPolar(): dst is empty")
+	}
+}
+
 func TestFitLine(t *testing.T) {
 	points := []image.Point{image.Pt(125, 24), image.Pt(124, 75), image.Pt(175, 76), image.Pt(176, 25)}
 
@@ -1499,6 +1575,20 @@ func TestFitLine(t *testing.T) {
 
 	if ok := line.Empty(); ok {
 		t.Errorf("FitLine(): line is empty")
+	}
+}
+
+func TestInvertAffineTransform(t *testing.T) {
+	src := NewMatWithSize(2, 3, MatTypeCV32F)
+	defer src.Close()
+
+	dst := NewMatWithSize(2, 3, MatTypeCV32F)
+	defer dst.Close()
+
+	InvertAffineTransform(src, &dst)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("InvertAffineTransform(): dst is empty")
 	}
 }
 
