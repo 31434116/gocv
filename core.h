@@ -65,8 +65,18 @@ extern "C"
         int length;
     } Points;
 
+    // Wrapper for the vector of Point2f structs aka std::vector<Point2f>
+    typedef struct Points2f
+    {
+        Point2f *points;
+        int length;
+    } Points2f;
+
     // Contour is alias for Points
     typedef Points Contour;
+
+    // Contour2f is alias for Points2f
+    typedef Points2f Contour2f;
 
     // Wrapper for the vector of Points vectors aka std::vector< std::vector<Point> >
     typedef struct Contours
@@ -333,7 +343,6 @@ typedef void *TermCriteria;
     void Mat_CartToPolar(Mat x, Mat y, Mat magnitude, Mat angle, bool angleInDegrees);
     bool Mat_CheckRange(Mat m);
     void Mat_CompleteSymm(Mat m, bool lowerToUpper);
-    void Mat_Compute(Mat a, Mat w, Mat u, Mat vt, int flags);
     void Mat_ConvertScaleAbs(Mat src, Mat dst, double alpha, double beta);
     void Mat_CopyMakeBorder(Mat src, Mat dst, int top, int bottom, int left, int right, int borderType,
                             Scalar value);
@@ -401,6 +410,8 @@ typedef void *TermCriteria;
 
     Mat Mat_rowRange(Mat m, int startrow, int endrow);
     Mat Mat_colRange(Mat m, int startrow, int endrow);
+
+    void IntVector_Close(struct IntVector ivec);
 
     Mat Mat_SimilarityTransform(Mat src, Mat dst);
 
