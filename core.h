@@ -343,6 +343,7 @@ typedef void *TermCriteria;
     void Mat_CartToPolar(Mat x, Mat y, Mat magnitude, Mat angle, bool angleInDegrees);
     bool Mat_CheckRange(Mat m);
     void Mat_CompleteSymm(Mat m, bool lowerToUpper);
+    void Mat_Compute(Mat a, Mat w, Mat u, Mat vt, int flags);
     void Mat_ConvertScaleAbs(Mat src, Mat dst, double alpha, double beta);
     void Mat_CopyMakeBorder(Mat src, Mat dst, int top, int bottom, int left, int right, int borderType,
                             Scalar value);
