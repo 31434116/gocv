@@ -39,6 +39,19 @@ Net Net_ReadNetFromTensorflowBytes(struct ByteArray model)
     return n;
 }
 
+Net Net_ReadNetFromDarknet(const char *config, const char *weights)
+{
+    Net n = new cv::dnn::Net(cv::dnn::readNetFromDarknet(config, weights));
+    return n;
+}
+
+Net Net_ReadNetFromDarknetBytes(struct ByteArray config, struct ByteArray weights)
+{
+    Net n = new cv::dnn::Net(cv::dnn::readNetFromDarknet(config.data, config.length,
+                                                         weights.data, weights.length));
+    return n;
+}
+
 void Net_Close(Net net)
 {
     delete net;
@@ -133,9 +146,9 @@ Mat Net_BlobFromImage(Mat image, double scalefactor, Size size, Scalar mean, boo
     cv::Size sz(size.width, size.height);
 
     // set the output ddepth to the input image depth
-    int ddepth = image->depth();
+    // int ddepth = image->depth(); // fatal if use
     cv::Scalar cm(mean.val1, mean.val2, mean.val3, mean.val4);
-    return new cv::Mat(cv::dnn::blobFromImage(*image, scalefactor, sz, cm, swapRB, crop, ddepth));
+    return new cv::Mat(cv::dnn::blobFromImage(*image, scalefactor, sz, cm, swapRB, crop));
 }
 
 void Net_BlobFromImages(struct Mats images, Mat blob, double scalefactor, Size size,
@@ -213,4 +226,21 @@ const char *Layer_GetName(Layer layer)
 const char *Layer_GetType(Layer layer)
 {
     return (*layer)->type.c_str();
+}
+
+void Net_NMSBoxes(const Rects bboxes, const FloatVector scores,
+                  const float score_threshold, const float nms_threshold,
+                  IntVector *indices, const float eta, const int top_k)
+{
+    std::vector<cv::Rect> bs(bboxes.length);
+    for (int i = 0; i < bboxes.length; i++)
+    {
+        Rect *r = bboxes.rects;
+        bs[i] = cv::Rect(r[i].x, r[i].y, r[i].width, r[i].height);
+    }
+    std::vector<float> ss(scores.val, scores.val + scores.length);
+    std::vector<int> is;
+    cv::dnn::NMSBoxes(bs, ss, score_threshold, nms_threshold, is, eta, top_k);
+    indices->val = is.data();
+    indices->length = is.size();
 }

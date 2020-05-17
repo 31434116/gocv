@@ -256,16 +256,16 @@ func ReadNetFromCaffe(prototxt string, caffeModel string) Net {
 // For further details, please see:
 // https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga946b342af1355185a7107640f868b64a
 //
-func ReadNetFromCaffeBytes(prototxt []byte, caffeModel []byte) (Net, error) {
-	bPrototxt, err := toByteArray(prototxt)
+func ReadNetFromCaffeBytes(prototxt []byte, caffemodel []byte) (Net, error) {
+	bprototxt, err := toByteArray(prototxt)
 	if err != nil {
 		return Net{}, err
 	}
-	bCaffeModel, err := toByteArray(caffeModel)
+	bcaffemodel, err := toByteArray(caffemodel)
 	if err != nil {
 		return Net{}, err
 	}
-	return Net{p: unsafe.Pointer(C.Net_ReadNetFromCaffeBytes(*bPrototxt, *bCaffeModel))}, nil
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromCaffeBytes(*bprototxt, *bcaffemodel))}, nil
 }
 
 // ReadNetFromTensorflow reads a network model stored in Tensorflow framework's format.
@@ -290,6 +290,27 @@ func ReadNetFromTensorflowBytes(model []byte) (Net, error) {
 		return Net{}, err
 	}
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromTensorflowBytes(*bModel))}, nil
+}
+
+func ReadNetFromDarknet(config string, weights string) Net {
+	cfg := C.CString(config)
+	defer C.free(unsafe.Pointer(cfg))
+
+	model := C.CString(weights)
+	defer C.free(unsafe.Pointer(model))
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromDarknet(cfg, model))}
+}
+
+func ReadNetFromDarknetBytes(config []byte, weights []byte) (Net, error) {
+	cfg, err := toByteArray(config)
+	if err != nil {
+		return Net{}, err
+	}
+	model, err := toByteArray(weights)
+	if err != nil {
+		return Net{}, err
+	}
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromDarknetBytes(*cfg, *model))}, nil
 }
 
 // BlobFromImage creates 4-dimensional blob from image. Optionally resizes and crops
@@ -419,7 +440,7 @@ func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 		Len:  int(cids.length),
 		Cap:  int(cids.length),
 	}
-	pcids := *(*[]int)(unsafe.Pointer(h))
+	pcids := *(*[]int32)(unsafe.Pointer(h))
 
 	for i := 0; i < int(cids.length); i++ {
 		ids = append(ids, int(pcids[i]))
@@ -435,16 +456,13 @@ func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 func (net *Net) GetLayerNames() (names []string) {
 	cstrs := C.CStrings{}
 	C.Net_GetLayerNames((C.Net)(net.p), &cstrs)
-
-	h := &reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(cstrs.strs)),
-		Len:  int(cstrs.length),
-		Cap:  int(cstrs.length),
-	}
-	pcstrs := *(*[]string)(unsafe.Pointer(h))
-
-	for i := 0; i < int(cstrs.length); i++ {
-		names = append(names, string(pcstrs[i]))
+	var pbuf []*C.char
+	h := (*reflect.SliceHeader)(unsafe.Pointer(&pbuf))
+	h.Cap = int(cstrs.length)
+	h.Len = int(cstrs.length)
+	h.Data = uintptr(unsafe.Pointer(cstrs.strs))
+	for _, i := range pbuf {
+		names = append(names, C.GoString(i))
 	}
 	return
 }
@@ -486,4 +504,35 @@ func (l *Layer) OutputNameToIndex(name string) int {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 	return int(C.Layer_OutputNameToIndex((C.Layer)(l.p), cName))
+}
+
+func NMSBoxes(bboxes []image.Rectangle, scores []float32, score_threshold, nms_threshold float32, eta float32, top_k int) (indices []int) {
+	cRectSlice := make([]C.Rect, len(bboxes))
+	for i, box := range bboxes {
+		cRectSlice[i] = C.Rect{
+			x:      C.int(box.Min.X),
+			y:      C.int(box.Min.Y),
+			width:  C.int(box.Max.X),
+			height: C.int(box.Max.Y),
+		}
+	}
+	cRects := C.Rects{
+		rects:  (*C.Rect)(&cRectSlice[0]),
+		length: C.int(len(bboxes)),
+	}
+	cScores := C.FloatVector{
+		val:    (*C.float)(&scores[0]),
+		length: C.int(len(scores)),
+	}
+	cIndices := C.IntVector{}
+	C.Net_NMSBoxes(cRects, cScores, C.float(score_threshold), C.float(nms_threshold), &cIndices, C.float(eta), C.int(top_k))
+	var pbuf []C.int
+	h := (*reflect.SliceHeader)(unsafe.Pointer(&pbuf))
+	h.Cap = int(cIndices.length)
+	h.Len = int(cIndices.length)
+	h.Data = uintptr(unsafe.Pointer(cIndices.val))
+	for _, i := range pbuf {
+		indices = append(indices, int(i))
+	}
+	return indices
 }

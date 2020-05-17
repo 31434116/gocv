@@ -25,6 +25,8 @@ Net Net_ReadNetFromCaffe(const char* prototxt, const char* caffeModel);
 Net Net_ReadNetFromCaffeBytes(struct ByteArray prototxt, struct ByteArray caffeModel);
 Net Net_ReadNetFromTensorflow(const char* model);
 Net Net_ReadNetFromTensorflowBytes(struct ByteArray model);
+Net Net_ReadNetFromDarknet(const char *config, const char* weights);
+Net Net_ReadNetFromDarknetBytes(struct ByteArray config, struct ByteArray weights);
 Mat Net_BlobFromImage(Mat image, double scalefactor, Size size, Scalar mean, bool swapRB,
                       bool crop);
 void Net_BlobFromImages(struct Mats images, Mat blob,  double scalefactor, Size size, 
@@ -50,6 +52,10 @@ int Layer_InputNameToIndex(Layer layer, const char* name);
 int Layer_OutputNameToIndex(Layer layer, const char* name);
 const char* Layer_GetName(Layer layer);
 const char* Layer_GetType(Layer layer);
+void Net_NMSBoxes(const Rects bboxes, const FloatVector scores, 
+                  const float score_threshold, const float nms_threshold,
+                  IntVector* indices, const float eta, const int top_k);
+
 
 #ifdef __cplusplus
 }
