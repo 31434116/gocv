@@ -6,6 +6,7 @@ package gocv
 */
 import "C"
 import (
+	"fmt"
 	"image"
 	"reflect"
 	"unsafe"
@@ -506,16 +507,21 @@ func (l *Layer) OutputNameToIndex(name string) int {
 	return int(C.Layer_OutputNameToIndex((C.Layer)(l.p), cName))
 }
 
-func NMSBoxes(bboxes []image.Rectangle, scores []float32, score_threshold, nms_threshold float32, eta float32, top_k int) (indices []int) {
+func NMSBoxes(bboxes [][]int32, scores []float32, score_threshold, nms_threshold float32, eta float32, top_k int) (indices []int) {
 	cRectSlice := make([]C.Rect, len(bboxes))
 	for i, box := range bboxes {
-		cRectSlice[i] = C.Rect{
-			x:      C.int(box.Min.X),
-			y:      C.int(box.Min.Y),
-			width:  C.int(box.Max.X),
-			height: C.int(box.Max.Y),
-		}
+		cRectSlice[i] = *(*C.Rect)(unsafe.Pointer(&box[0]))
+		fmt.Println(int(cRectSlice[i].x), int(cRectSlice[i].y), int(cRectSlice[i].width), int(cRectSlice[i].height))
+		/*
+			cRectSlice[i] = C.Rect{
+				x:      C.int(box.Min.X),
+				y:      C.int(box.Min.Y),
+				width:  C.int(box.Max.X),
+				height: C.int(box.Max.Y),
+			}
+		*/
 	}
+
 	cRects := C.Rects{
 		rects:  (*C.Rect)(&cRectSlice[0]),
 		length: C.int(len(bboxes)),
