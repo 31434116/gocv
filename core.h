@@ -31,6 +31,13 @@ typedef struct FloatVector
     int length;
 } FloatVector;
 
+// Wrapper for std::vector<double>
+typedef struct DoubleVector
+{
+    double *val;
+    int length;
+} DoubleVector;
+
 #ifdef __cplusplus
 #include <opencv2/opencv.hpp>
 extern "C"
@@ -259,7 +266,14 @@ typedef void *TermCriteria;
     Mat Mat_NewFromScalar(const Scalar ar, int type);
     Mat Mat_NewWithSizeFromScalar(const Scalar ar, int rows, int cols, int type);
     Mat Mat_NewFromBytes(int rows, int cols, int type, struct ByteArray buf);
+    Mat Mat_NewFromInts(int rows, int cols, int type, struct IntVector buf);
+    Mat Mat_NewFromFloats(int rows, int cols, int type, struct FloatVector buf);
+    Mat Mat_NewFromDoubles(int rows, int cols, int type, struct DoubleVector buf);
     Mat Mat_FromPtr(Mat m, int rows, int cols, int type, int prows, int pcols);
+    Mat Mat_Eye(int rows, int cols, int type);
+    Mat Mat_Ones(int rows, int cols, int type);
+    Mat Mat_Diag(Mat m);
+    Mat Mat_Inv(Mat m, int method);
     void Mat_Close(Mat m);
     int Mat_Empty(Mat m);
     Mat Mat_Clone(Mat m);
@@ -318,8 +332,10 @@ typedef void *TermCriteria;
     void Mat_SubtractFloat(Mat m, float val);
     void Mat_MultiplyFloat(Mat m, float val);
     void Mat_DivideFloat(Mat m, float val);
-    Mat Mat_MultiplyMatrix(Mat x, Mat y);
-
+    Mat Mat_Mul(Mat x, Mat y);
+    Mat Mat_Div(Mat x, Mat y);
+    Mat Mat_AddWith(Mat x, Mat y);
+    Mat Mat_Sub(Mat x, Mat y);
     Mat Mat_T(Mat x);
 
     void LUT(Mat src, Mat lut, Mat dst);
@@ -412,10 +428,15 @@ typedef void *TermCriteria;
     Mat Mat_rowRange(Mat m, int startrow, int endrow);
     Mat Mat_colRange(Mat m, int startrow, int endrow);
 
+    Mat Mat_row(Mat m, int row);
+    Mat Mat_col(Mat m, int col);
+
     void IntVector_Close(struct IntVector ivec);
 
     Mat Mat_SimilarityTransform(Mat src, Mat dst);
 
+    bool Mat_CholeskyFloat(Mat A, Mat b);
+    bool Mat_CholeskyDouble(Mat A, Mat b);
 #ifdef __cplusplus
 }
 #endif

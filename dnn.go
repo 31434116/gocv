@@ -6,7 +6,6 @@ package gocv
 */
 import "C"
 import (
-	"fmt"
 	"image"
 	"reflect"
 	"unsafe"
@@ -511,7 +510,7 @@ func NMSBoxes(bboxes [][]int32, scores []float32, score_threshold, nms_threshold
 	cRectSlice := make([]C.Rect, len(bboxes))
 	for i, box := range bboxes {
 		cRectSlice[i] = *(*C.Rect)(unsafe.Pointer(&box[0]))
-		fmt.Println(int(cRectSlice[i].x), int(cRectSlice[i].y), int(cRectSlice[i].width), int(cRectSlice[i].height))
+		//fmt.Println(int(cRectSlice[i].x), int(cRectSlice[i].y), int(cRectSlice[i].width), int(cRectSlice[i].height))
 		/*
 			cRectSlice[i] = C.Rect{
 				x:      C.int(box.Min.X),

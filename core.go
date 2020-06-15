@@ -224,6 +224,46 @@ func NewMatFromBytes(rows int, cols int, mt MatType, data []byte) (Mat, error) {
 	return newMat(C.Mat_NewFromBytes(C.int(rows), C.int(cols), C.int(mt), *cBytes)), nil
 }
 
+func NewMatFromInt32(rows int, cols int, mt MatType, data []int32) Mat {
+	cInts := C.IntVector{
+		val:    (*C.int)(&data[0]),
+		length: C.int(len(data)),
+	}
+	return newMat(C.Mat_NewFromInts(C.int(rows), C.int(cols), C.int(mt), cInts))
+}
+
+func NewMatFromFloat32(rows int, cols int, mt MatType, data []float32) Mat {
+	cFloats := C.FloatVector{
+		val:    (*C.float)(&data[0]),
+		length: C.int(len(data)),
+	}
+	return newMat(C.Mat_NewFromFloats(C.int(rows), C.int(cols), C.int(mt), cFloats))
+}
+
+func NewMatFromFloat64(rows int, cols int, mt MatType, data []float64) Mat {
+	cDoubles := C.DoubleVector{
+		val:    (*C.double)(&data[0]),
+		length: C.int(len(data)),
+	}
+	return newMat(C.Mat_NewFromDoubles(C.int(rows), C.int(cols), C.int(mt), cDoubles))
+}
+
+func NewMatEye(rows int, cols int, mt MatType) Mat {
+	return newMat(C.Mat_Eye(C.int(rows), C.int(cols), C.int(mt)))
+}
+
+func NewMatOnes(rows int, cols int, mt MatType) Mat {
+	return newMat(C.Mat_Ones(C.int(rows), C.int(cols), C.int(mt)))
+}
+
+func NewMatDiag(src Mat) Mat {
+	return newMat(C.Mat_Diag(src.p))
+}
+
+func (m *Mat) Inv(method int) Mat {
+	return newMat(C.Mat_Inv(m.p, C.int(method)))
+}
+
 // FromPtr returns a new Mat with a specific size and type, initialized from a Mat Ptr.
 func (m *Mat) FromPtr(rows int, cols int, mt MatType, prow int, pcol int) (Mat, error) {
 	return newMat(C.Mat_FromPtr(m.p, C.int(rows), C.int(cols), C.int(mt), C.int(prow), C.int(pcol))), nil
@@ -734,9 +774,24 @@ func (m *Mat) DivideFloat(val float32) {
 	C.Mat_DivideFloat(m.p, C.float(val))
 }
 
-// MultiplyMatrix multiplies matrix (m*x)
-func (m *Mat) MultiplyMatrix(x Mat) Mat {
-	return newMat(C.Mat_MultiplyMatrix(m.p, x.p))
+// Mul multiplies matrix (m*x)
+func (m *Mat) Mul(x Mat) Mat {
+	return newMat(C.Mat_Mul(m.p, x.p))
+}
+
+// Div divide matrix (m/x)
+func (m *Mat) Div(x Mat) Mat {
+	return newMat(C.Mat_Div(m.p, x.p))
+}
+
+// Add add matrix (m+x)
+func (m *Mat) Add(x Mat) Mat {
+	return newMat(C.Mat_AddWith(m.p, x.p))
+}
+
+// Sub subtract matrix (m-x)
+func (m *Mat) Sub(x Mat) Mat {
+	return newMat(C.Mat_Sub(m.p, x.p))
 }
 
 // T  transpose matrix
@@ -1995,6 +2050,10 @@ func (m *Mat) RowRange(start, end int) Mat {
 	return newMat(C.Mat_rowRange(m.p, C.int(start), C.int(end)))
 }
 
+func (m *Mat) Row(row int) Mat {
+	return newMat(C.Mat_row(m.p, C.int(row)))
+}
+
 // ColRange creates a matrix header for the specified column span.
 //
 // For further details, please see:
@@ -2004,7 +2063,26 @@ func (m *Mat) ColRange(start, end int) Mat {
 	return newMat(C.Mat_colRange(m.p, C.int(start), C.int(end)))
 }
 
+func (m *Mat) Col(col int) Mat {
+	return newMat(C.Mat_col(m.p, C.int(col)))
+}
+
 // add by yoda.guo
 func SimilarityTransform(src Mat, dst Mat) (ret Mat) {
 	return newMat(C.Mat_SimilarityTransform(src.p, dst.p))
+}
+
+func Cholesky(a *Mat, b *Mat) bool {
+	if a.Type()&MatTypeCV32F == MatTypeCV32F {
+		if b != nil {
+			return bool(C.Mat_CholeskyFloat(a.p, b.p))
+		}
+		return bool(C.Mat_CholeskyFloat(a.p, nil))
+	} else if a.Type()&MatTypeCV64F == MatTypeCV64F {
+		if b != nil {
+			return bool(C.Mat_CholeskyDouble(a.p, b.p))
+		}
+		return bool(C.Mat_CholeskyDouble(a.p, nil))
+	}
+	return false
 }

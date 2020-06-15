@@ -33,9 +33,44 @@ Mat Mat_NewFromBytes(int rows, int cols, int type, struct ByteArray buf)
     return new cv::Mat(rows, cols, type, buf.data);
 }
 
+Mat Mat_NewFromInts(int rows, int cols, int type, struct IntVector buf)
+{
+    return new cv::Mat(rows, cols, type, buf.val);
+}
+
+Mat Mat_NewFromFloats(int rows, int cols, int type, struct FloatVector buf)
+{
+    return new cv::Mat(rows, cols, type, buf.val);
+}
+
+Mat Mat_NewFromDoubles(int rows, int cols, int type, struct DoubleVector buf)
+{
+    return new cv::Mat(rows, cols, type, buf.val);
+}
+
 Mat Mat_FromPtr(Mat m, int rows, int cols, int type, int prow, int pcol)
 {
     return new cv::Mat(rows, cols, type, m->ptr(prow, pcol));
+}
+
+Mat Mat_Eye(int rows, int cols, int type)
+{
+    return new cv::Mat(cv::Mat::eye(rows, cols, type));
+}
+
+Mat Mat_Ones(int rows, int cols, int type)
+{
+    return new cv::Mat(cv::Mat::ones(rows, cols, type));
+}
+
+Mat Mat_Diag(Mat m)
+{
+    return new cv::Mat(cv::Mat::diag(*m));
+}
+
+Mat Mat_Inv(Mat m, int method)
+{
+    return new cv::Mat(m->inv(method));
 }
 
 // Mat_Close deletes an existing Mat
@@ -386,9 +421,24 @@ void Mat_DivideFloat(Mat m, float val)
     *m /= val;
 }
 
-Mat Mat_MultiplyMatrix(Mat x, Mat y)
+Mat Mat_Mul(Mat x, Mat y)
 {
     return new cv::Mat((*x) * (*y));
+}
+
+Mat Mat_Div(Mat x, Mat y)
+{
+    return new cv::Mat((*x) / (*y));
+}
+
+Mat Mat_AddWith(Mat x, Mat y)
+{
+    return new cv::Mat((*x) + (*y));
+}
+
+Mat Mat_Sub(Mat x, Mat y)
+{
+    return new cv::Mat((*x) - (*y));
 }
 
 Mat Mat_T(Mat x)
@@ -921,9 +971,19 @@ Mat Mat_rowRange(Mat m, int startrow, int endrow)
     return new cv::Mat(m->rowRange(startrow, endrow));
 }
 
+Mat Mat_row(Mat m, int row)
+{
+    return new cv::Mat(m->row(row));
+}
+
 Mat Mat_colRange(Mat m, int startrow, int endrow)
 {
     return new cv::Mat(m->colRange(startrow, endrow));
+}
+
+Mat Mat_col(Mat m, int col)
+{
+    return new cv::Mat(m->col(col));
 }
 
 void IntVector_Close(struct IntVector ivec)
@@ -1042,6 +1102,39 @@ Mat Mat_SimilarityTransform(Mat src, Mat dst)
     return new cv::Mat(std::move(trans));
 }
 
+bool Mat_CholeskyFloat(Mat A, Mat b)
+{
+    int m = A->cols;
+    float *bdata = NULL;
+    size_t bstep = 0;
+    int n = 0;
+    if (b != NULL)
+    {
+        bdata = (float *)b->ptr();
+        bstep = b->cols * 4;
+        n = b->cols;
+    }
+    return cv::Cholesky((float *)A->ptr(), A->cols * 4, m, bdata, bstep, n);
+}
+
+bool Mat_CholeskyDouble(Mat A, Mat b)
+{
+    int m = A->cols;
+    if (A->rows < A->cols)
+        m = A->rows;
+    double *bdata = NULL;
+    size_t bstep = 0;
+    int n = 0;
+    if (b != NULL)
+    {
+        bdata = (double *)b->ptr();
+        bstep = b->cols * 8;
+        n = b->cols;
+        if (b->rows < b->cols)
+            n = b->rows;
+    }
+    return cv::Cholesky((double *)A->ptr(), A->cols * 8, m, bdata, bstep, n);
+}
 //----insightface
 /*
 cv::Mat meanAxis0(const cv::Mat &src)
