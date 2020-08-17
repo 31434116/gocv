@@ -24,12 +24,26 @@ void BackgroundSubtractorMOG2_Apply(BackgroundSubtractorMOG2 b, Mat src, Mat dst
     (*b)->apply(*src, *dst);
 }
 
+Mat BackgroundSubtractorMOG2_GetBackgroundImage(BackgroundSubtractorMOG2 b)
+{
+    Mat dst = new cv::Mat();
+    (*b)->getBackgroundImage(*dst);
+    return dst;
+}
+
 void BackgroundSubtractorKNN_Close(BackgroundSubtractorKNN k) {
     delete k;
 }
 
 void BackgroundSubtractorKNN_Apply(BackgroundSubtractorKNN k, Mat src, Mat dst) {
     (*k)->apply(*src, *dst);
+}
+
+Mat BackgroundSubtractorKNN_GetBackgroundImage(BackgroundSubtractorKNN k)
+{
+    Mat dst = new cv::Mat();
+    (*k)->getBackgroundImage(*dst);
+    return dst;
 }
 
 void CalcOpticalFlowFarneback(Mat prevImg, Mat nextImg, Mat flow, double scale, int levels,

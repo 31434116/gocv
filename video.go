@@ -69,6 +69,15 @@ func (b *BackgroundSubtractorMOG2) Apply(src Mat, dst *Mat) {
 	return
 }
 
+// Apply computes a foreground mask using the current BackgroundSubtractorMOG2.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d7/df6/classcv_1_1BackgroundSubtractor.html#aa735e76f7069b3fa9c3f32395f9ccd21
+//
+func (b *BackgroundSubtractorMOG2) GetBackgroundImage() Mat {
+	return newMat(C.BackgroundSubtractorMOG2_GetBackgroundImage((C.BackgroundSubtractorMOG2)(b.p)))
+}
+
 // BackgroundSubtractorKNN is a wrapper around the cv::BackgroundSubtractorKNN.
 type BackgroundSubtractorKNN struct {
 	// C.BackgroundSubtractorKNN
@@ -114,6 +123,15 @@ func (k *BackgroundSubtractorKNN) Close() error {
 func (k *BackgroundSubtractorKNN) Apply(src Mat, dst *Mat) {
 	C.BackgroundSubtractorKNN_Apply((C.BackgroundSubtractorKNN)(k.p), src.p, dst.p)
 	return
+}
+
+// Apply computes a foreground mask using the current BackgroundSubtractorMOG2.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d7/df6/classcv_1_1BackgroundSubtractor.html#aa735e76f7069b3fa9c3f32395f9ccd21
+//
+func (k *BackgroundSubtractorKNN) GetBackgroundImage() Mat {
+	return newMat(C.BackgroundSubtractorKNN_GetBackgroundImage((C.BackgroundSubtractorKNN)(k.p)))
 }
 
 // CalcOpticalFlowFarneback computes a dense optical flow using
