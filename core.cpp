@@ -116,7 +116,7 @@ struct ByteArray Mat_ToBytes(Mat m)
 
 struct ByteArray Mat_DataPtr(Mat m)
 {
-    return ByteArray{reinterpret_cast<char *>(m->data), static_cast<int>(m->total() * m->elemSize())};
+    return ByteArray{ reinterpret_cast<char *>(m->data), static_cast<int>(m->total() * m->elemSize()) };
 }
 
 // Mat_Region returns a Mat of a region of another Mat
@@ -502,7 +502,7 @@ void Mat_BitwiseXorWithMask(Mat src1, Mat src2, Mat dst, Mat mask)
 }
 
 void Mat_BatchDistance(Mat src1, Mat src2, Mat dist, int dtype, Mat nidx, int normType, int K,
-                       Mat mask, int update, bool crosscheck)
+    Mat mask, int update, bool crosscheck)
 {
     cv::batchDistance(*src1, *src2, *dist, dtype, *nidx, normType, K, *mask, update, crosscheck);
 }
@@ -553,7 +553,7 @@ void Mat_ConvertScaleAbs(Mat src, Mat dst, double alpha, double beta)
 }
 
 void Mat_CopyMakeBorder(Mat src, Mat dst, int top, int bottom, int left, int right, int borderType,
-                        Scalar value)
+    Scalar value)
 {
     cv::Scalar c_value(value.val1, value.val2, value.val3, value.val4);
     cv::copyMakeBorder(*src, *dst, top, bottom, left, right, borderType, c_value);
@@ -749,8 +749,11 @@ void Mat_Multiply(Mat src1, Mat src2, Mat dst)
     cv::multiply(*src1, *src2, *dst);
 }
 
-void Mat_Normalize(Mat src, Mat dst, double alpha, double beta, int typ)
-{
+void Mat_MultiplyWithParams(Mat src1, Mat src2, Mat dst, double scale, int dtype) {
+    cv::multiply(*src1, *src2, *dst, scale, dtype);
+}
+
+void Mat_Normalize(Mat src, Mat dst, double alpha, double beta, int typ) {
     cv::normalize(*src, *dst, alpha, beta, typ);
 }
 
@@ -951,7 +954,7 @@ void ByteArray_Release(struct ByteArray buf)
 
 struct ByteArray toByteArray(const char *buf, int len)
 {
-    ByteArray ret = {new char[len], len};
+    ByteArray ret ={ new char[len], len };
     memcpy(ret.data, buf, len);
     return ret;
 }
@@ -1062,8 +1065,8 @@ cv::Mat nonReflectiveSimilarity(const cv::Mat uv, const cv::Mat xy, int option_k
 
     const float *pdata = r.ptr<float>(0);
     cv::Mat tinv = (cv::Mat_<float>(3, 3) << pdata[0], -pdata[1], 0,
-                    pdata[1], pdata[0], 0,
-                    pdata[2], pdata[3], 1);
+        pdata[1], pdata[0], 0,
+        pdata[2], pdata[3], 1);
 
     return std::move(tinv.inv(cv::DECOMP_SVD));
 }

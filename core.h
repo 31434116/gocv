@@ -42,7 +42,7 @@ typedef struct DoubleVector
 #include <opencv2/opencv.hpp>
 extern "C"
 {
-#endif
+    #endif
 
     typedef struct RawData
     {
@@ -231,13 +231,13 @@ extern "C"
         double nu03;
     } Moment;
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
     typedef cv::Mat *Mat;
     typedef cv::TermCriteria *TermCriteria;
-#else
-typedef void *Mat;
-typedef void *TermCriteria;
-#endif
+    #else
+    typedef void *Mat;
+    typedef void *TermCriteria;
+    #endif
 
     // Wrapper for the vector of Mat aka std::vector<Mat>
     typedef struct Mats
@@ -353,7 +353,7 @@ typedef void *TermCriteria;
     void Mat_BitwiseXorWithMask(Mat src1, Mat src2, Mat dst, Mat mask);
     void Mat_Compare(Mat src1, Mat src2, Mat dst, int ct);
     void Mat_BatchDistance(Mat src1, Mat src2, Mat dist, int dtype, Mat nidx, int normType, int K,
-                           Mat mask, int update, bool crosscheck);
+        Mat mask, int update, bool crosscheck);
     int Mat_BorderInterpolate(int p, int len, int borderType);
     void Mat_CalcCovarMatrix(Mat samples, Mat covar, Mat mean, int flags, int ctype);
     void Mat_CartToPolar(Mat x, Mat y, Mat magnitude, Mat angle, bool angleInDegrees);
@@ -362,7 +362,7 @@ typedef void *TermCriteria;
     void Mat_Compute(Mat a, Mat w, Mat u, Mat vt, int flags);
     void Mat_ConvertScaleAbs(Mat src, Mat dst, double alpha, double beta);
     void Mat_CopyMakeBorder(Mat src, Mat dst, int top, int bottom, int left, int right, int borderType,
-                            Scalar value);
+        Scalar value);
     int Mat_CountNonZero(Mat src);
     void Mat_DCT(Mat src, Mat dst, int flags);
     double Mat_Determinant(Mat m);
@@ -398,6 +398,7 @@ typedef void *TermCriteria;
     void Mat_MulSpectrums(Mat a, Mat b, Mat c, int flags);
     void Mat_Multiply(Mat src1, Mat src2, Mat dst);
     void Mat_Subtract(Mat src1, Mat src2, Mat dst);
+    void Mat_MultiplyWithParams(Mat src1, Mat src2, Mat dst, double scale, int dtype);
     void Mat_Normalize(Mat src, Mat dst, double alpha, double beta, int typ);
     double Norm(Mat src1, int normType);
     void Mat_PerspectiveTransform(Mat src, Mat dst, Mat tm);
@@ -437,7 +438,7 @@ typedef void *TermCriteria;
 
     bool Mat_CholeskyFloat(Mat A, Mat b);
     bool Mat_CholeskyDouble(Mat A, Mat b);
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
 #endif
 

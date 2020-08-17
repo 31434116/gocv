@@ -29,10 +29,12 @@ Contour ApproxPolyDP(Contour curve, double epsilon, bool closed)
 
     for (size_t i = 0; i < length; i++)
     {
-        points[i] = (Point){approxCurvePts[i].x, approxCurvePts[i].y};
+        points[i] = (Point){ approxCurvePts[i].x, approxCurvePts[i].y };
     }
 
-    return (Contour){points, length};
+    return (Contour) {        
+points, length    
+};
 }
 
 void CvtColor(Mat src, Mat dst, int code)
@@ -120,17 +122,19 @@ struct RotatedRect FitEllipse(Points points)
     for (size_t i = 0; i < points.length; i++)
     {
         pts.push_back(cv::Point(points.points[i].x, points.points[i].y));
-        Point pt = {points.points[i].x, points.points[i].y};
+        Point pt ={ points.points[i].x, points.points[i].y };
         rpts[i] = pt;
     }
 
     cv::RotatedRect bRect = cv::fitEllipse(pts);
 
-    Rect r = {bRect.boundingRect().x, bRect.boundingRect().y, bRect.boundingRect().width, bRect.boundingRect().height};
-    Point centrpt = {int(lroundf(bRect.center.x)), int(lroundf(bRect.center.y))};
-    Size szsz = {int(lroundf(bRect.size.width)), int(lroundf(bRect.size.height))};
+    Rect r ={ bRect.boundingRect().x, bRect.boundingRect().y, bRect.boundingRect().width, bRect.boundingRect().height };
+    Point centrpt ={ int(lroundf(bRect.center.x)), int(lroundf(bRect.center.y)) };
+    Size szsz ={ int(lroundf(bRect.size.width)), int(lroundf(bRect.size.height)) };
 
-    RotatedRect rotRect = {(Contour){rpts, 4}, r, centrpt, szsz, bRect.angle};
+    RotatedRect rotRect ={ (Contour) {
+        rpts, 4
+    }, r, centrpt, szsz, bRect.angle };
     return rotRect;
 }
 
@@ -211,9 +215,9 @@ void MatchTemplate(Mat image, Mat templ, Mat result, int method, Mat mask)
 struct Moment Moments(Mat src, bool binaryImage)
 {
     cv::Moments m = cv::moments(*src, binaryImage);
-    Moment mom = {m.m00, m.m10, m.m01, m.m20, m.m11, m.m02, m.m30, m.m21, m.m12, m.m03,
-                  m.mu20, m.mu11, m.mu02, m.mu30, m.mu21, m.mu12, m.mu03,
-                  m.nu20, m.nu11, m.nu02, m.nu30, m.nu21, m.nu12, m.nu03};
+    Moment mom ={ m.m00, m.m10, m.m01, m.m20, m.m11, m.m02, m.m30, m.m21, m.m12, m.m03,
+        m.mu20, m.mu11, m.mu02, m.mu30, m.mu21, m.mu12, m.mu03,
+        m.nu20, m.nu11, m.nu02, m.nu30, m.nu21, m.nu12, m.nu03 };
     return mom;
 }
 
@@ -239,7 +243,7 @@ struct Rect BoundingRect(Contour con)
     }
 
     cv::Rect bRect = cv::boundingRect(pts);
-    Rect r = {bRect.x, bRect.y, bRect.width, bRect.height};
+    Rect r ={ bRect.x, bRect.y, bRect.width, bRect.height };
     return r;
 }
 
@@ -280,18 +284,20 @@ struct RotatedRect MinAreaRect(Points points)
 
     for (size_t j = 0; j < 4; j++)
     {
-        Point pt = {int(lroundf(pts4[j].x)), int(lroundf(pts4[j].y))};
+        Point pt ={ int(lroundf(pts4[j].x)), int(lroundf(pts4[j].y)) };
         rpts[j] = pt;
     }
 
     delete[] pts4;
 
     cv::Rect bRect = cvrect.boundingRect();
-    Rect r = {bRect.x, bRect.y, bRect.width, bRect.height};
-    Point centrpt = {int(lroundf(cvrect.center.x)), int(lroundf(cvrect.center.y))};
-    Size szsz = {int(lroundf(cvrect.size.width)), int(lroundf(cvrect.size.height))};
+    Rect r ={ bRect.x, bRect.y, bRect.width, bRect.height };
+    Point centrpt ={ int(lroundf(cvrect.center.x)), int(lroundf(cvrect.center.y)) };
+    Size szsz ={ int(lroundf(cvrect.size.width)), int(lroundf(cvrect.size.height)) };
 
-    RotatedRect retrect = {(Contour){rpts, 4}, r, centrpt, szsz, cvrect.angle};
+    RotatedRect retrect ={ (Contour) {        
+rpts, 4    
+}, r, centrpt, szsz, cvrect.angle };
     return retrect;
 }
 
@@ -323,14 +329,14 @@ struct Contours FindContours(Mat src, int mode, int method)
 
         for (size_t j = 0; j < contours[i].size(); j++)
         {
-            Point pt = {contours[i][j].x, contours[i][j].y};
+            Point pt ={ contours[i][j].x, contours[i][j].y };
             pts[j] = pt;
         }
 
-        points[i] = (Contour){pts, (int)contours[i].size()};
+        points[i] = (Contour){ pts, (int)contours[i].size() };
     }
 
-    Contours cons = {points, (int)contours.size()};
+    Contours cons ={ points, (int)contours.size() };
     return cons;
 }
 
@@ -340,7 +346,7 @@ int ConnectedComponents(Mat src, Mat labels, int connectivity, int ltype, int cc
 }
 
 int ConnectedComponentsWithStats(Mat src, Mat labels, Mat stats, Mat centroids,
-                                 int connectivity, int ltype, int ccltype)
+    int connectivity, int ltype, int ccltype)
 {
     return cv::connectedComponentsWithStats(*src, *labels, *stats, *centroids, connectivity, ltype, ccltype);
 }
@@ -354,7 +360,9 @@ Mat GetStructuringElement(int shape, Size ksize)
 Scalar MorphologyDefaultBorderValue()
 {
     cv::Scalar cs = cv::morphologyDefaultBorderValue();
-    return (Scalar){cs[0], cs[1], cs[2], cs[3]};
+    return (Scalar) {        
+cs[0], cs[1], cs[2], cs[3]    
+};
 }
 
 void MorphologyEx(Mat src, Mat dst, int op, Mat kernel)
@@ -380,13 +388,13 @@ Mat GetGaussianKernel(int ksize, double sigma, int ktype)
 }
 
 void Laplacian(Mat src, Mat dst, int dDepth, int kSize, double scale, double delta,
-               int borderType)
+    int borderType)
 {
     cv::Laplacian(*src, *dst, dDepth, kSize, scale, delta, borderType);
 }
 
 void Scharr(Mat src, Mat dst, int dDepth, int dx, int dy, double scale, double delta,
-            int borderType)
+    int borderType)
 {
     cv::Scharr(*src, *dst, dDepth, dx, dy, scale, delta, borderType);
 }
@@ -425,7 +433,7 @@ void HoughCircles(Mat src, Mat circles, int method, double dp, double minDist)
 }
 
 void HoughCirclesWithParams(Mat src, Mat circles, int method, double dp, double minDist,
-                            double param1, double param2, int minRadius, int maxRadius)
+    double param1, double param2, int minRadius, int maxRadius)
 {
     cv::HoughCircles(*src, *circles, method, dp, minDist, param1, param2, minRadius, maxRadius);
 }
@@ -446,11 +454,11 @@ void HoughLinesPWithParams(Mat src, Mat lines, double rho, double theta, int thr
 }
 
 void HoughLinesPointSet(Mat points, Mat lines, int linesMax, int threshold,
-                        double minRho, double maxRho, double rhoStep,
-                        double minTheta, double maxTheta, double thetaStep)
+    double minRho, double maxRho, double rhoStep,
+    double minTheta, double maxTheta, double thetaStep)
 {
     cv::HoughLinesPointSet(*points, *lines, linesMax, threshold,
-                           minRho, maxRho, rhoStep, minTheta, maxTheta, thetaStep);
+        minRho, maxRho, rhoStep, minTheta, maxTheta, thetaStep);
 }
 
 void Integral(Mat src, Mat sum, Mat sqsum, Mat tilted)
@@ -464,7 +472,7 @@ double Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ)
 }
 
 void AdaptiveThreshold(Mat src, Mat dst, double maxValue, int adaptiveMethod, int thresholdType,
-                       int blockSize, double c)
+    int blockSize, double c)
 {
     cv::adaptiveThreshold(*src, *dst, maxValue, adaptiveMethod, thresholdType, blockSize, c);
 }
@@ -574,12 +582,12 @@ void Polylines(Mat img, Contours points, bool isClosed, Scalar color, int thickn
 struct Size GetTextSize(const char *text, int fontFace, double fontScale, int thickness)
 {
     cv::Size sz = cv::getTextSize(text, fontFace, fontScale, thickness, NULL);
-    Size size = {sz.width, sz.height};
+    Size size ={ sz.width, sz.height };
     return size;
 }
 
 void PutText(Mat img, const char *text, Point org, int fontFace, double fontScale,
-             Scalar color, int thickness)
+    Scalar color, int thickness)
 {
     cv::Point pt(org.x, org.y);
     cv::Scalar c = cv::Scalar(color.val1, color.val2, color.val3, color.val4);
@@ -587,7 +595,7 @@ void PutText(Mat img, const char *text, Point org, int fontFace, double fontScal
 }
 
 void PutTextWithParams(Mat img, const char *text, Point org, int fontFace, double fontScale,
-                       Scalar color, int thickness, int lineType, bool bottomLeftOrigin)
+    Scalar color, int thickness, int lineType, bool bottomLeftOrigin)
 {
     cv::Point pt(org.x, org.y);
     cv::Scalar c = cv::Scalar(color.val1, color.val2, color.val3, color.val4);
@@ -620,7 +628,7 @@ void WarpAffine(Mat src, Mat dst, Mat m, Size dsize)
 }
 
 void WarpAffineWithParams(Mat src, Mat dst, Mat rot_mat, Size dsize, int flags, int borderMode,
-                          Scalar borderValue)
+    Scalar borderValue)
 {
     cv::Size sz(dsize.width, dsize.height);
     cv::Scalar c = cv::Scalar(borderValue.val1, borderValue.val2, borderValue.val3, borderValue.val4);
@@ -683,9 +691,41 @@ Mat GetPerspectiveTransform2f(Contour2f src, Contour2f dst)
     return new cv::Mat(cv::getPerspectiveTransform(src_pts, dst_pts));
 }
 
-void DrawContours(Mat src, Contours contours, int contourIdx, Scalar color, int thickness)
-{
-    std::vector<std::vector<cv::Point>> cntrs;
+Mat GetAffineTransform(Contour src, Contour dst) {
+    std::vector<cv::Point2f> src_pts;
+    for (size_t i = 0; i < src.length; i++) {
+        src_pts.push_back(cv::Point2f(src.points[i].x, src.points[i].y));
+    }
+    std::vector<cv::Point2f> dst_pts;
+    for (size_t i = 0; i < dst.length; i++) {
+        dst_pts.push_back(cv::Point2f(dst.points[i].x, dst.points[i].y));
+    }
+
+    return new cv::Mat(cv::getAffineTransform(src_pts, dst_pts));
+}
+
+Mat GetAffineTransform2f(Contour2f src, Contour2f dst) {
+    std::vector<cv::Point2f> src_pts;
+
+    for (size_t i = 0; i < src.length; i++) {
+        src_pts.push_back(cv::Point2f(src.points[i].x, src.points[i].y));
+    }
+
+    std::vector<cv::Point2f> dst_pts;
+
+    for (size_t i = 0; i < dst.length; i++) {
+        dst_pts.push_back(cv::Point2f(dst.points[i].x, dst.points[i].y));
+    }
+
+    return new cv::Mat(cv::getAffineTransform(src_pts, dst_pts));
+}
+
+Mat FindHomography(Mat src, Mat dst, int method, double ransacReprojThreshold, Mat mask, const int maxIters, const double confidence) {
+    return new cv::Mat(cv::findHomography(*src, *dst, method, ransacReprojThreshold, *mask, maxIters, confidence));
+}
+
+void DrawContours(Mat src, Contours contours, int contourIdx, Scalar color, int thickness) {
+    std::vector<std::vector<cv::Point> > cntrs;
 
     for (size_t i = 0; i < contours.length; i++)
     {
@@ -785,9 +825,9 @@ Point2f PhaseCorrelate(Mat src1, Mat src2, Mat window, double *response)
 {
     cv::Point2d result = cv::phaseCorrelate(*src1, *src2, *window, response);
 
-    Point2f result2f{
-        x : float(result.x),
-        y : float(result.y),
+    Point2f result2f ={
+        .x = float(result.x),
+        .y = float(result.y),
     };
     return result2f;
 }
