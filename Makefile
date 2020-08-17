@@ -50,8 +50,8 @@ deps_debian:
 
 # Download OpenCV source tarballs.
 download:
-	rm -rf $(TMP_DIR)opencv
-	mkdir $(TMP_DIR)opencv
+	#rm -rf $(TMP_DIR)opencv
+	#mkdir $(TMP_DIR)opencv
 	cd $(TMP_DIR)opencv
 	curl -Lo opencv.zip https://github.com/opencv/opencv/archive/$(OPENCV_VERSION).zip
 	unzip -q opencv.zip
@@ -62,7 +62,7 @@ download:
 
 # Download dldt source tarballs.
 download_dldt:
-	sudo rm -rf /usr/local/dldt/
+	#sudo rm -rf /usr/local/dldt/
 	sudo git clone https://github.com/opencv/dldt -b 2019 /usr/local/dldt/
 
 # Build dldt.
@@ -162,7 +162,7 @@ build_all:
 # Cleanup temporary build files.
 clean:
 	go clean --cache
-	rm -rf $(TMP_DIR)opencv
+	#rm -rf $(TMP_DIR)opencv
 
 # Cleanup old library files.
 sudo_pre_install_clean:
