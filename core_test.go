@@ -495,6 +495,17 @@ func TestMatConvert(t *testing.T) {
 	}
 }
 
+func TestMatConvertWithParams(t *testing.T) {
+	src := NewMatWithSize(100, 100, MatTypeCV8U)
+	defer src.Close()
+	dst := NewMat()
+	defer dst.Close()
+	src.ConvertToWithParams(&dst, MatTypeCV32F, 1.0/255.0, 0.0)
+	if dst.Empty() {
+		t.Error("TestConvertWithParams dst should not be empty.")
+	}
+}
+
 func TestMatConvertFp16(t *testing.T) {
 	src := NewMatWithSize(100, 100, MatTypeCV32F)
 	defer src.Close()
@@ -2015,6 +2026,47 @@ func TestMatMinMaxIdx(t *testing.T) {
 	}
 }
 
+func TestMixChannels(t *testing.T) {
+	bgra := NewMatWithSizeFromScalar(NewScalar(255, 0, 0, 255), 10, 10, MatTypeCV8UC4)
+	defer bgra.Close()
+	bgr := NewMatWithSize(bgra.Rows(), bgra.Cols(), MatTypeCV8UC3)
+	defer bgr.Close()
+	alpha := NewMatWithSize(bgra.Rows(), bgra.Cols(), MatTypeCV8UC1)
+	defer alpha.Close()
+
+	dst := []Mat{bgr, alpha}
+
+	// bgra[0] -> bgr[2], bgra[1] -> bgr[1],
+	// bgra[2] -> bgr[0], bgra[3] -> alpha[0]
+	fromTo := []int{0, 2, 1, 1, 2, 0, 3, 3}
+
+	MixChannels([]Mat{bgra}, dst, fromTo)
+
+	bgrChans := Split(bgr)
+	scalarByte := []byte{0, 0, 255}
+	for c := 0; c < bgr.Channels(); c++ {
+		for i := 0; i < bgr.Rows(); i++ {
+			for j := 0; j < bgr.Cols(); j++ {
+				if s := bgrChans[c].GetUCharAt(i, j); s != scalarByte[c] {
+					t.Errorf("TestMixChannels incorrect bgr scalar: %v\n", s)
+				}
+			}
+		}
+	}
+
+	alphaChans := Split(alpha)
+	scalarByte = []byte{255}
+	for c := 0; c < alpha.Channels(); c++ {
+		for i := 0; i < alpha.Rows(); i++ {
+			for j := 0; j < alpha.Cols(); j++ {
+				if s := alphaChans[c].GetUCharAt(i, j); s != scalarByte[c] {
+					t.Errorf("TestMixChannels incorrect alpha scalar: %v\n", s)
+				}
+			}
+		}
+	}
+}
+
 func TestMatToImage(t *testing.T) {
 	mat1 := NewMatWithSize(101, 102, MatTypeCV8UC3)
 	defer mat1.Close()
@@ -2275,5 +2327,19 @@ func TestColRowRange(t *testing.T) {
 	defer submatCols.Close()
 	if submatCols.Cols() != 50 {
 		t.Errorf("TestColRowRange incorrect submatCols count: %v\n", submatCols.Cols())
+	}
+}
+
+func Test_toGoStrings(t *testing.T) {
+	goStrings := []string{"foo", "bar"}
+	cStrings := toCStrings(goStrings)
+	result := toGoStrings(cStrings)
+	if len(goStrings) != len(result) {
+		t.Errorf("TesttoGoStrings failed: length of converted string is not equal to original \n")
+	}
+	for i, s := range goStrings {
+		if s != result[i] {
+			t.Errorf("TesttoGoStrings failed: strings are not equal. expected=%s, actusal=%s", s, result[i])
+		}
 	}
 }

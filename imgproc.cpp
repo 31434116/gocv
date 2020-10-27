@@ -579,10 +579,13 @@ void Polylines(Mat img, Contours points, bool isClosed, Scalar color, int thickn
     cv::polylines(*img, pts, isClosed, c, thickness);
 }
 
-struct Size GetTextSize(const char *text, int fontFace, double fontScale, int thickness)
-{
-    cv::Size sz = cv::getTextSize(text, fontFace, fontScale, thickness, NULL);
-    Size size ={ sz.width, sz.height };
+struct Size GetTextSize(const char* text, int fontFace, double fontScale, int thickness) {
+    return GetTextSizeWithBaseline(text, fontFace, fontScale, thickness, NULL);
+}
+
+struct Size GetTextSizeWithBaseline(const char* text, int fontFace, double fontScale, int thickness, int* baesline) {
+    cv::Size sz = cv::getTextSize(text, fontFace, fontScale, thickness, baesline);
+    Size size = {sz.width, sz.height};
     return size;
 }
 
@@ -724,6 +727,39 @@ Mat FindHomography(Mat src, Mat dst, int method, double ransacReprojThreshold, M
     return new cv::Mat(cv::findHomography(*src, *dst, method, ransacReprojThreshold, *mask, maxIters, confidence));
 }
 
+Mat GetAffineTransform(Contour src, Contour dst) {
+  std::vector<cv::Point2f> src_pts;
+  for (size_t i = 0; i < src.length; i++) {
+    src_pts.push_back(cv::Point2f(src.points[i].x, src.points[i].y));
+  }
+  std::vector<cv::Point2f> dst_pts;
+  for (size_t i = 0; i < dst.length; i++) {
+    dst_pts.push_back(cv::Point2f(dst.points[i].x, dst.points[i].y));
+  }
+
+  return new cv::Mat(cv::getAffineTransform(src_pts, dst_pts));
+}
+
+Mat GetAffineTransform2f(Contour2f src, Contour2f dst) {
+    std::vector<cv::Point2f> src_pts;
+
+    for (size_t i = 0; i < src.length; i++) {
+        src_pts.push_back(cv::Point2f(src.points[i].x, src.points[i].y));
+    }
+
+    std::vector<cv::Point2f> dst_pts;
+
+    for (size_t i = 0; i < dst.length; i++) {
+        dst_pts.push_back(cv::Point2f(dst.points[i].x, dst.points[i].y));
+    }
+
+    return new cv::Mat(cv::getAffineTransform(src_pts, dst_pts));
+}
+
+Mat FindHomography(Mat src, Mat dst, int method, double ransacReprojThreshold, Mat mask, const int maxIters, const double confidence) {
+    return new cv::Mat(cv::findHomography(*src, *dst, method, ransacReprojThreshold, *mask, maxIters, confidence));
+}
+
 void DrawContours(Mat src, Contours contours, int contourIdx, Scalar color, int thickness) {
     std::vector<std::vector<cv::Point> > cntrs;
 
@@ -825,7 +861,7 @@ Point2f PhaseCorrelate(Mat src1, Mat src2, Mat window, double *response)
 {
     cv::Point2d result = cv::phaseCorrelate(*src1, *src2, *window, response);
 
-    Point2f result2f ={
+    Point2f result2f = {
         .x = float(result.x),
         .y = float(result.y),
     };

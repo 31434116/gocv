@@ -434,6 +434,37 @@ func TestBFMatcher(t *testing.T) {
 	}
 }
 
+func TestFlannBasedMatcher(t *testing.T) {
+	descriptorFile := "images/sift_descriptor.png"
+	desc1 := IMRead(descriptorFile, IMReadGrayScale)
+	if desc1.Empty() {
+		t.Error("descriptor one is empty in FlannBasedMatcher test")
+	}
+	defer desc1.Close()
+	desc1.ConvertTo(&desc1, MatTypeCV32F)
+
+	desc2 := IMRead(descriptorFile, IMReadGrayScale)
+	if desc2.Empty() {
+		t.Error("descriptor two is empty in FlannBasedMatcher test")
+	}
+	defer desc2.Close()
+	desc2.ConvertTo(&desc2, MatTypeCV32F)
+
+	f := NewFlannBasedMatcher()
+	defer f.Close()
+
+	k := 2
+	dMatches := f.KnnMatch(desc1, desc2, k)
+	if len(dMatches) < 1 {
+		t.Errorf("DMatches was excepted to have at least one element")
+	}
+	for i := range dMatches {
+		if len(dMatches[i]) != k {
+			t.Errorf("Length does not match k cluster amount in FlannBasedMatcher")
+		}
+	}
+}
+
 func TestDrawKeyPoints(t *testing.T) {
 	keypointsFile := "images/simple.jpg"
 	img := IMRead(keypointsFile, IMReadColor)
@@ -452,6 +483,76 @@ func TestDrawKeyPoints(t *testing.T) {
 	if simpleKP.Rows() != img.Rows() || simpleKP.Cols() != img.Cols() {
 		t.Error("Invalid DrawKeyPoints test")
 	}
+}
+
+func TestDrawMatches(t *testing.T) {
+	queryFile := "images/box.png"
+	trainFile := "images/box_in_scene.png"
+
+	query := IMRead(queryFile, IMReadGrayScale)
+	train := IMRead(trainFile, IMReadGrayScale)
+
+	if query.Empty() || train.Empty() {
+		t.Error("at least one of files is empty in DrawMatches test")
+	}
+
+	defer query.Close()
+	defer train.Close()
+
+	sift := NewSIFT()
+	defer sift.Close()
+
+	m1 := NewMat()
+	m2 := NewMat()
+	defer m1.Close()
+	defer m2.Close()
+
+	kp1, des1 := sift.DetectAndCompute(query, m1)
+	kp2, des2 := sift.DetectAndCompute(train, m2)
+	defer des1.Close()
+	defer des2.Close()
+
+	bf := NewBFMatcher()
+	defer bf.Close()
+	matches := bf.KnnMatch(des1, des2, 2)
+
+	if len(matches) == 0 {
+		t.Error("no matches found in DrawMatches test")
+	}
+
+	var good []DMatch
+	for _, m := range matches {
+		if len(m) > 1 {
+			if m[0].Distance < 0.75*m[1].Distance {
+				good = append(good, m[0])
+			}
+		}
+	}
+
+	c := color.RGBA{
+		R: 255,
+		G: 0,
+		B: 0,
+		A: 0,
+	}
+
+	mask := make([]byte, 0)
+
+	out := NewMat()
+	defer out.Close()
+
+	DrawMatches(query, kp1, train, kp2, good, &out, c, c, mask, DrawDefault)
+
+	if out.Cols() != (query.Cols()+train.Cols()) || out.Rows() < train.Rows() || out.Rows() < query.Rows() {
+		t.Error("Invalid DrawMatches test")
+	}
+
+	mask = make([]byte, len(good))
+
+	smoke := NewMat()
+	defer smoke.Close()
+
+	DrawMatches(query, kp1, train, kp2, good, &smoke, c, c, mask, DrawDefault)
 }
 
 func TestSIFT(t *testing.T) {

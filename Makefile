@@ -2,10 +2,10 @@
 .PHONY: test deps download build clean astyle cmds docker
 
 # OpenCV version to use.
-OPENCV_VERSION?=4.4.0
+OPENCV_VERSION?=4.5.0
 
 # Go version to use when building Docker image
-GOVERSION?=1.14.4
+GOVERSION?=1.15.3
 
 # Temporary directory to put files into.
 TMP_DIR?=/tmp/
@@ -227,7 +227,7 @@ docker:
 astyle:
 	astyle --project=.astylerc --recursive *.cpp,*.h
 
-CMDS=basic-drawing caffe-classifier captest capwindow counter faceblur facedetect find-circles hand-gestures img-similarity mjpeg-streamer motion-detect pose saveimage savevideo showimage ssd-facedetect tf-classifier tracking version
+CMDS=basic-drawing caffe-classifier captest capwindow counter faceblur facedetect find-circles hand-gestures hello-sift img-similarity mjpeg-streamer motion-detect pose saveimage savevideo showimage ssd-facedetect tf-classifier tracking version
 cmds:
 	for cmd in $(CMDS) ; do \
 		go build -o build/$$cmd cmd/$$cmd/main.go ;

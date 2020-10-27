@@ -108,6 +108,10 @@ void Mat_ConvertTo(Mat m, Mat dst, int type)
     m->convertTo(*dst, type);
 }
 
+void Mat_ConvertToWithParams(Mat m, Mat dst, int type, float alpha, float beta) {
+    m->convertTo(*dst, type, alpha, beta);
+}
+
 // Mat_ToBytes returns the bytes representation of the underlying data.
 struct ByteArray Mat_ToBytes(Mat m)
 {
@@ -739,8 +743,29 @@ void Mat_MinMaxLoc(Mat m, double *minVal, double *maxVal, Point *minLoc, Point *
     maxLoc->y = cMaxLoc.y;
 }
 
-void Mat_MulSpectrums(Mat a, Mat b, Mat c, int flags)
-{
+void Mat_MixChannels(struct Mats src, struct Mats dst, struct IntVector fromTo) {
+    std::vector<cv::Mat> srcMats;
+
+    for (int i = 0; i < src.length; ++i) {
+        srcMats.push_back(*src.mats[i]);
+    }
+
+    std::vector<cv::Mat> dstMats;
+
+    for (int i = 0; i < dst.length; ++i) {
+        dstMats.push_back(*dst.mats[i]);
+    }
+
+    std::vector<int> fromTos;
+
+    for (int i = 0; i < fromTo.length; ++i) {
+        fromTos.push_back(fromTo.val[i]);
+    }
+
+    cv::mixChannels(srcMats, dstMats, fromTos);
+}
+
+void Mat_MulSpectrums(Mat a, Mat b, Mat c, int flags) {
     cv::mulSpectrums(*a, *b, *c, flags);
 }
 
@@ -894,8 +919,14 @@ void Contours_Close(struct Contours cs)
     delete[] cs.contours;
 }
 
-void KeyPoints_Close(struct KeyPoints ks)
-{
+void CStrings_Close(struct CStrings cstrs) {
+    for ( int i = 0; i < cstrs.length; i++ ) {
+        delete [] cstrs.strs[i];
+    }
+    delete [] cstrs.strs;
+}
+
+void KeyPoints_Close(struct KeyPoints ks) {
     delete[] ks.keypoints;
 }
 

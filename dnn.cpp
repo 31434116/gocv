@@ -52,8 +52,12 @@ Net Net_ReadNetFromDarknetBytes(struct ByteArray config, struct ByteArray weight
     return n;
 }
 
-void Net_Close(Net net)
-{
+Net Net_ReadNetFromTorch(const char* model) {
+    Net n = new cv::dnn::Net(cv::dnn::readNetFromTorch(model));
+    return n;
+}
+
+void Net_Close(Net net) {
     delete net;
 }
 
@@ -144,10 +148,8 @@ Mat Net_BlobFromImage(Mat image, double scalefactor, Size size, Scalar mean, boo
                       bool crop)
 {
     cv::Size sz(size.width, size.height);
-
-    // set the output ddepth to the input image depth
-    // int ddepth = image->depth(); // fatal if use
     cv::Scalar cm(mean.val1, mean.val2, mean.val3, mean.val4);
+    // use the default target ddepth here.
     return new cv::Mat(cv::dnn::blobFromImage(*image, scalefactor, sz, cm, swapRB, crop));
 }
 
@@ -164,8 +166,8 @@ void Net_BlobFromImages(struct Mats images, Mat blob, double scalefactor, Size s
     cv::Size sz(size.width, size.height);
     cv::Scalar cm = cv::Scalar(mean.val1, mean.val2, mean.val3, mean.val4);
 
-    // TODO: handle different version signatures of this function v2 vs v3.
-    cv::dnn::blobFromImages(imgs, *blob, scalefactor, sz, cm, swapRB, crop, ddepth);
+    // ignore the passed in ddepth, just use default.
+    cv::dnn::blobFromImages(imgs, *blob, scalefactor, sz, cm, swapRB, crop);
 }
 
 void Net_ImagesFromBlob(Mat blob_, struct Mats *images_)
@@ -228,19 +230,72 @@ const char *Layer_GetType(Layer layer)
     return (*layer)->type.c_str();
 }
 
-void Net_NMSBoxes(const Rects bboxes, const FloatVector scores,
-                  const float score_threshold, const float nms_threshold,
-                  IntVector *indices, const float eta, const int top_k)
-{
-    std::vector<cv::Rect> bs(bboxes.length);
-    for (int i = 0; i < bboxes.length; i++)
-    {
-        Rect *r = bboxes.rects;
-        bs[i] = cv::Rect(r[i].x, r[i].y, r[i].width, r[i].height);
+void NMSBoxes(struct Rects bboxes, FloatVector scores, float score_threshold, float nms_threshold, IntVector* indices) {
+    std::vector<cv::Rect> _bboxes;
+
+    for (int i = 0; i < bboxes.length; ++i) {
+        _bboxes.push_back(cv::Rect(
+            bboxes.rects[i].x,
+            bboxes.rects[i].y,
+            bboxes.rects[i].width,
+            bboxes.rects[i].height
+        ));
     }
-    std::vector<float> ss(scores.val, scores.val + scores.length);
-    std::vector<int> is;
-    cv::dnn::NMSBoxes(bs, ss, score_threshold, nms_threshold, is, eta, top_k);
-    indices->val = is.data();
-    indices->length = is.size();
+
+    std::vector<float> _scores;
+
+    float* f;
+    int i;
+    for (i = 0, f = scores.val; i < scores.length; ++f, ++i) {
+        _scores.push_back(*f);
+    }
+
+    std::vector<int> _indices(indices->length);
+
+    cv::dnn::NMSBoxes(_bboxes, _scores, score_threshold, nms_threshold, _indices, 1.f, 0);
+
+    int* ptr = new int[_indices.size()];
+
+    for (size_t i=0; i<_indices.size(); ++i) {
+        ptr[i] = _indices[i];
+    }
+
+    indices->length = _indices.size();
+    indices->val = ptr;
+    return;
+}
+
+void NMSBoxesWithParams(struct Rects bboxes, FloatVector scores, const float score_threshold, const float nms_threshold, IntVector* indices, const float eta, const int top_k) {
+    std::vector<cv::Rect> _bboxes;
+
+    for (int i = 0; i < bboxes.length; ++i) {
+        _bboxes.push_back(cv::Rect(
+            bboxes.rects[i].x,
+            bboxes.rects[i].y,
+            bboxes.rects[i].width,
+            bboxes.rects[i].height
+        ));
+    }
+
+    std::vector<float> _scores;
+
+    float* f;
+    int i;
+    for (i = 0, f = scores.val; i < scores.length; ++f, ++i) {
+        _scores.push_back(*f);
+    }
+
+    std::vector<int> _indices(indices->length);
+
+    cv::dnn::NMSBoxes(_bboxes, _scores, score_threshold, nms_threshold, _indices, eta, top_k);
+
+    int* ptr = new int[_indices.size()];
+
+    for (size_t i=0; i<_indices.size(); ++i) {
+        ptr[i] = _indices[i];
+    }
+
+    indices->length = _indices.size();
+    indices->val = ptr;
+    return;
 }

@@ -313,6 +313,18 @@ func ReadNetFromDarknetBytes(config []byte, weights []byte) (Net, error) {
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromDarknetBytes(*cfg, *model))}, nil
 }
 
+// ReadNetFromTorch reads a network model stored in Torch framework's format (t7).
+//   check net.Empty() for read failure
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d6/d0f/group__dnn.html#gaaaed8c8530e9e92fe6647700c13d961e
+//
+func ReadNetFromTorch(model string) Net {
+	cmodel := C.CString(model)
+	defer C.free(unsafe.Pointer(cmodel))
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromTorch(cmodel))}
+}
+
 // BlobFromImage creates 4-dimensional blob from image. Optionally resizes and crops
 // image from center, subtract mean values, scales values by scalefactor,
 // swap Blue and Red channels.
@@ -434,13 +446,14 @@ func (net *Net) GetPerfProfile() float64 {
 func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 	cids := C.IntVector{}
 	C.Net_GetUnconnectedOutLayers((C.Net)(net.p), &cids)
+	defer C.free(unsafe.Pointer(cids.val))
 
 	h := &reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(cids.val)),
 		Len:  int(cids.length),
 		Cap:  int(cids.length),
 	}
-	pcids := *(*[]int32)(unsafe.Pointer(h))
+	pcids := *(*[]C.int)(unsafe.Pointer(h))
 
 	for i := 0; i < int(cids.length); i++ {
 		ids = append(ids, int(pcids[i]))
@@ -455,16 +468,9 @@ func (net *Net) GetUnconnectedOutLayers() (ids []int) {
 //
 func (net *Net) GetLayerNames() (names []string) {
 	cstrs := C.CStrings{}
+	defer C.CStrings_Close(cstrs)
 	C.Net_GetLayerNames((C.Net)(net.p), &cstrs)
-	var pbuf []*C.char
-	h := (*reflect.SliceHeader)(unsafe.Pointer(&pbuf))
-	h.Cap = int(cstrs.length)
-	h.Len = int(cstrs.length)
-	h.Data = uintptr(unsafe.Pointer(cstrs.strs))
-	for _, i := range pbuf {
-		names = append(names, C.GoString(i))
-	}
-	return
+	return toGoStrings(cstrs)
 }
 
 // Close Layer
@@ -506,38 +512,98 @@ func (l *Layer) OutputNameToIndex(name string) int {
 	return int(C.Layer_OutputNameToIndex((C.Layer)(l.p), cName))
 }
 
-func NMSBoxes(bboxes [][]int32, scores []float32, score_threshold, nms_threshold float32, eta float32, top_k int) (indices []int) {
-	cRectSlice := make([]C.Rect, len(bboxes))
-	for i, box := range bboxes {
-		cRectSlice[i] = *(*C.Rect)(unsafe.Pointer(&box[0]))
-		//fmt.Println(int(cRectSlice[i].x), int(cRectSlice[i].y), int(cRectSlice[i].width), int(cRectSlice[i].height))
-		/*
-			cRectSlice[i] = C.Rect{
-				x:      C.int(box.Min.X),
-				y:      C.int(box.Min.Y),
-				width:  C.int(box.Max.X),
-				height: C.int(box.Max.Y),
-			}
-		*/
+// NMSBoxes performs non maximum suppression given boxes and corresponding scores.
+//
+// For futher details, please see:
+// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int) {
+	bboxesRectArr := []C.struct_Rect{}
+	for _, v := range bboxes {
+		bbox := C.struct_Rect{
+			x:      C.int(v.Min.X),
+			y:      C.int(v.Min.Y),
+			width:  C.int(v.Size().X),
+			height: C.int(v.Size().Y),
+		}
+		bboxesRectArr = append(bboxesRectArr, bbox)
 	}
 
-	cRects := C.Rects{
-		rects:  (*C.Rect)(&cRectSlice[0]),
+	bboxesRects := C.Rects{
+		rects:  (*C.Rect)(&bboxesRectArr[0]),
 		length: C.int(len(bboxes)),
 	}
-	cScores := C.FloatVector{
-		val:    (*C.float)(&scores[0]),
-		length: C.int(len(scores)),
+
+	scoresFloats := []C.float{}
+	for _, v := range scores {
+		scoresFloats = append(scoresFloats, C.float(v))
 	}
-	cIndices := C.IntVector{}
-	C.Net_NMSBoxes(cRects, cScores, C.float(score_threshold), C.float(nms_threshold), &cIndices, C.float(eta), C.int(top_k))
-	var pbuf []C.int
-	h := (*reflect.SliceHeader)(unsafe.Pointer(&pbuf))
-	h.Cap = int(cIndices.length)
-	h.Len = int(cIndices.length)
-	h.Data = uintptr(unsafe.Pointer(cIndices.val))
-	for _, i := range pbuf {
-		indices = append(indices, int(i))
+	scoresVector := C.struct_FloatVector{}
+	scoresVector.val = (*C.float)(&scoresFloats[0])
+	scoresVector.length = (C.int)(len(scoresFloats))
+
+	indicesVector := C.IntVector{}
+
+	C.NMSBoxes(bboxesRects, scoresVector, C.float(scoreThreshold), C.float(nmsThreshold), &indicesVector)
+	defer C.free(unsafe.Pointer(indicesVector.val))
+
+	h := &reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(indicesVector.val)),
+		Len:  int(indicesVector.length),
+		Cap:  int(indicesVector.length),
 	}
-	return indices
+
+	ptr := *(*[]C.int)(unsafe.Pointer(h))
+
+	for i := 0; i < int(indicesVector.length); i++ {
+		indices[i] = int(ptr[i])
+	}
+	return
+}
+
+// NMSBoxesWithParams performs non maximum suppression given boxes and corresponding scores.
+//
+// For futher details, please see:
+// https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int, eta float32, topK int) {
+	bboxesRectArr := []C.struct_Rect{}
+	for _, v := range bboxes {
+		bbox := C.struct_Rect{
+			x:      C.int(v.Min.X),
+			y:      C.int(v.Min.Y),
+			width:  C.int(v.Size().X),
+			height: C.int(v.Size().Y),
+		}
+		bboxesRectArr = append(bboxesRectArr, bbox)
+	}
+
+	bboxesRects := C.Rects{
+		rects:  (*C.Rect)(&bboxesRectArr[0]),
+		length: C.int(len(bboxes)),
+	}
+
+	scoresFloats := []C.float{}
+	for _, v := range scores {
+		scoresFloats = append(scoresFloats, C.float(v))
+	}
+	scoresVector := C.struct_FloatVector{}
+	scoresVector.val = (*C.float)(&scoresFloats[0])
+	scoresVector.length = (C.int)(len(scoresFloats))
+
+	indicesVector := C.IntVector{}
+
+	C.NMSBoxesWithParams(bboxesRects, scoresVector, C.float(scoreThreshold), C.float(nmsThreshold), &indicesVector, C.float(eta), C.int(topK))
+	defer C.free(unsafe.Pointer(indicesVector.val))
+
+	h := &reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(indicesVector.val)),
+		Len:  int(indicesVector.length),
+		Cap:  int(indicesVector.length),
+	}
+
+	ptr := *(*[]C.int)(unsafe.Pointer(h))
+
+	for i := 0; i < int(indicesVector.length); i++ {
+		indices[i] = int(ptr[i])
+	}
+	return
 }

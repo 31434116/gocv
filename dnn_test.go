@@ -46,9 +46,17 @@ func checkNet(t *testing.T, net Net) {
 		t.Errorf("Invalid len output layers in ReadNet test: %d\n", len(ids))
 	}
 
+	if len(ids) == 1 && ids[0] != 142 {
+		t.Errorf("Invalid unconnected output layers in ReadNet test: %d\n", ids[0])
+	}
+
 	lnames := net.GetLayerNames()
 	if len(lnames) != 142 {
 		t.Errorf("Invalid len layer names in ReadNet test: %d\n", len(lnames))
+	}
+
+	if len(lnames) == 142 && lnames[1] != "conv1/relu_7x7" {
+		t.Errorf("Invalid layer name in ReadNet test: %s\n", lnames[1])
 	}
 
 	prob := net.ForwardLayers([]string{"prob"})
@@ -449,5 +457,61 @@ func TestFP16BlobFromImage(t *testing.T) {
 
 	if len(data) != 30000 {
 		t.Errorf("FP16BlobFromImage incorrect length: %v\n", len(data))
+	}
+}
+
+func TestNMSBoxes(t *testing.T) {
+	img := IMRead("images/face.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid Mat in NMSBoxes test")
+	}
+	defer img.Close()
+
+	img.ConvertTo(&img, MatTypeCV32F)
+
+	bboxes := []image.Rectangle{
+		image.Rect(53, 47, 589, 451),
+		image.Rect(118, 54, 618, 450),
+		image.Rect(53, 66, 605, 480),
+		image.Rect(111, 65, 630, 480),
+		image.Rect(156, 51, 640, 480),
+	}
+	scores := []float32{0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726}
+	indices := make([]int, 10)
+	scoreThreshold := float32(0.5)
+	nmsThreshold := float32(0.4)
+
+	NMSBoxes(bboxes, scores, scoreThreshold, nmsThreshold, indices)
+
+	if indices[0] != 3 {
+		t.Errorf("Invalid NMSBoxes test indices: %v", indices)
+	}
+}
+
+func TestNMSBoxesWithParams(t *testing.T) {
+	img := IMRead("images/face.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid Mat in NMSBoxesWithParams test")
+	}
+	defer img.Close()
+
+	img.ConvertTo(&img, MatTypeCV32F)
+
+	bboxes := []image.Rectangle{
+		image.Rect(53, 47, 589, 451),
+		image.Rect(118, 54, 618, 450),
+		image.Rect(53, 66, 605, 480),
+		image.Rect(111, 65, 630, 480),
+		image.Rect(156, 51, 640, 480),
+	}
+	scores := []float32{0.82094115, 0.7998236, 0.9809663, 0.99717456, 0.89628726}
+	indices := make([]int, 10)
+	scoreThreshold := float32(0.5)
+	nmsThreshold := float32(0.4)
+
+	NMSBoxesWithParams(bboxes, scores, scoreThreshold, nmsThreshold, indices, float32(1.0), 0)
+
+	if indices[0] != 3 {
+		t.Errorf("Invalid NMSBoxesWithParams test indices: %v", indices)
 	}
 }
