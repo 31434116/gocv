@@ -994,6 +994,15 @@ void IntVector_Close(struct IntVector ivec)
     delete[] ivec.val;
 }
 
+void FloatVector_Close(struct FloatVector fvec)
+{
+    delete[] fvec.val;
+}
+
+void DoubleVector_Close(struct DoubleVector dvec)
+{
+    delete[] dvec.val;
+}
 // --------------------add by yoda.guo--------------------------------
 // xy = [x y]
 // XY = [[x  y  1  0]
