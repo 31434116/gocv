@@ -269,6 +269,10 @@ Mat Mat_NewFromInts(int rows, int cols, int type, struct IntVector buf);
 Mat Mat_NewFromFloats(int rows, int cols, int type, struct FloatVector buf);
 Mat Mat_NewFromDoubles(int rows, int cols, int type, struct DoubleVector buf);
 Mat Mat_FromPtr(Mat m, int rows, int cols, int type, int prows, int pcols);
+Mat Mat_Eye(int rows, int cols, int type);
+Mat Mat_Ones(int rows, int cols, int type);
+Mat Mat_Diag(Mat m);
+Mat Mat_Inv(Mat m, int method);
 void Mat_Close(Mat m);
 int Mat_Empty(Mat m);
 Mat Mat_Clone(Mat m);
@@ -328,7 +332,10 @@ void Mat_AddFloat(Mat m, float val);
 void Mat_SubtractFloat(Mat m, float val);
 void Mat_MultiplyFloat(Mat m, float val);
 void Mat_DivideFloat(Mat m, float val);
+Mat Mat_Mul(Mat x, Mat y);
 Mat Mat_MultiplyMatrix(Mat x, Mat y);
+Mat Mat_Div(Mat x, Mat y);
+Mat Mat_Sub(Mat x, Mat y);
 
 Mat Mat_T(Mat x);
 
@@ -346,6 +353,7 @@ void Mat_BitwiseOrWithMask(Mat src1, Mat src2, Mat dst, Mat mask);
 void Mat_BitwiseXor(Mat src1, Mat src2, Mat dst);
 void Mat_BitwiseXorWithMask(Mat src1, Mat src2, Mat dst, Mat mask);
 void Mat_Compare(Mat src1, Mat src2, Mat dst, int ct);
+void Mat_Compute(Mat a, Mat w, Mat u, Mat vt, int flags);
 void Mat_BatchDistance(Mat src1, Mat src2, Mat dist, int dtype, Mat nidx, int normType, int K,
                        Mat mask, int update, bool crosscheck);
 int Mat_BorderInterpolate(int p, int len, int borderType);
