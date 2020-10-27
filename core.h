@@ -335,6 +335,7 @@ void Mat_DivideFloat(Mat m, float val);
 Mat Mat_Mul(Mat x, Mat y);
 Mat Mat_MultiplyMatrix(Mat x, Mat y);
 Mat Mat_Div(Mat x, Mat y);
+Mat Mat_AddWith(Mat x, Mat y);
 Mat Mat_Sub(Mat x, Mat y);
 
 Mat Mat_T(Mat x);
