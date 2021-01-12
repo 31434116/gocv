@@ -3,7 +3,10 @@ package gocv
 import (
 	"image"
 	"image/color"
+	"image/draw"
+	"log"
 	"math"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -368,8 +371,8 @@ func TestMinAreaRect(t *testing.T) {
 	if m.Center.Y != 2 {
 		t.Errorf("TestMinAreaRect(): unexpected center.Y = %v, want = %v", m.Center.Y, 2)
 	}
-	if m.Angle != -45.0 {
-		t.Errorf("TestMinAreaRect(): unexpected angle = %v, want = %v", m.Angle, -45.0)
+	if m.Angle != 45.0 {
+		t.Errorf("TestMinAreaRect(): unexpected angle = %v, want = %v", m.Angle, 45.0)
 	}
 }
 
@@ -1133,7 +1136,22 @@ func TestGetTextSize(t *testing.T) {
 	if size.Y != 26 {
 		t.Error("Invalid text size height")
 	}
+
+	size1, base := GetTextSizeWithBaseline("test", FontHersheySimplex, 1.2, 1)
+	if size1.X != 72 {
+		t.Error("Invalid text size width")
+	}
+
+	if size1.Y != 26 {
+		t.Error("Invalid text size height")
+	}
+
+	expected := 11
+	if base != expected {
+		t.Errorf("invalid base. expected %d, actual %d", expected, base)
+	}
 }
+
 func TestPutText(t *testing.T) {
 	img := NewMatWithSize(150, 150, MatTypeCV8U)
 	if img.Empty() {
@@ -1852,5 +1870,283 @@ func TestPhaseCorrelate(t *testing.T) {
 
 	if responseDifferent > 0.05 {
 		t.Errorf("expected response for different image to be < 0.05, but got %f", responseDifferent)
+	}
+}
+
+func TestMatToImage(t *testing.T) {
+	mat1 := NewMatWithSize(101, 102, MatTypeCV8UC3)
+	defer mat1.Close()
+
+	img, err := mat1.ToImage()
+	if err != nil {
+		t.Errorf("TestToImage %v.", err)
+	}
+
+	if img.Bounds().Dx() != 102 {
+		t.Errorf("TestToImage incorrect width got %d.", img.Bounds().Dx())
+	}
+
+	if img.Bounds().Dy() != 101 {
+		t.Errorf("TestToImage incorrect height got %d.", img.Bounds().Dy())
+	}
+
+	matreg := mat1.Region(image.Rect(25, 25, 75, 75))
+	defer matreg.Close()
+	img, err = matreg.ToImage()
+	if err != nil {
+		t.Errorf("Expected error.")
+	}
+
+	mat2 := NewMatWithSize(101, 102, MatTypeCV8UC1)
+	defer mat2.Close()
+
+	img, err = mat2.ToImage()
+	if err != nil {
+		t.Errorf("TestToImage %v.", err)
+	}
+
+	mat3 := NewMatWithSize(101, 102, MatTypeCV8UC4)
+	defer mat3.Close()
+
+	img, err = mat3.ToImage()
+	if err != nil {
+		t.Errorf("TestToImage %v.", err)
+	}
+
+	matreg3 := mat3.Region(image.Rect(25, 25, 75, 75))
+	defer matreg3.Close()
+	img, err = matreg3.ToImage()
+	if err != nil {
+		t.Errorf("Expected error.")
+	}
+
+	matWithUnsupportedType := NewMatWithSize(101, 102, MatTypeCV8S)
+	defer matWithUnsupportedType.Close()
+
+	_, err = matWithUnsupportedType.ToImage()
+	if err == nil {
+		t.Error("TestToImage expected error got nil.")
+	}
+}
+
+//Tests that image is the same after converting to Mat and back to Image
+func TestImageToMatRGBA(t *testing.T) {
+	file, err := os.Open("images/gocvlogo.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	img0, _, err := image.Decode(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mat, err := ImageToMatRGBA(img0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer mat.Close()
+	img1, err := mat.ToImage()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !compareImages(img0, img1) {
+		t.Errorf("Image after converting to Mat and back to Image isn't the same")
+	}
+
+	img3 := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	mat3, err := ImageToMatRGBA(img3)
+	if err != nil {
+		t.Error(err)
+	}
+	defer mat3.Close()
+}
+
+//Tests that image is the same after converting to Mat and back to Image
+func TestImageToMatRGB(t *testing.T) {
+	file, err := os.Open("images/gocvlogo.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	img0, _, err := image.Decode(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mat, err := ImageToMatRGB(img0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer mat.Close()
+	img1, err := mat.ToImage()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !compareImages(img0, img1) {
+		t.Errorf("Image after converting to Mat and back to Image isn't the same")
+	}
+
+	img3 := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	mat3, err := ImageToMatRGB(img3)
+	if err != nil {
+		t.Error(err)
+	}
+	defer mat3.Close()
+}
+
+func TestImageGrayToMatGray(t *testing.T) {
+	file, err := os.Open("images/gocvlogo.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	imgSrc, _, err := image.Decode(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	img0 := image.NewGray(imgSrc.Bounds())
+	draw.Draw(img0, imgSrc.Bounds(), imgSrc, image.ZP, draw.Src)
+
+	mat, err := ImageGrayToMatGray(img0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer mat.Close()
+	img1, err := mat.ToImage()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !compareImages(img0, img1) {
+		t.Errorf("Image after converting to Mat and back to Image isn't the same")
+	}
+}
+
+func TestAccumulate(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	Accumulate(src, &dst)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulateWithMask(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+	AccumulateWithMask(src, &dst, mask)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulateSquare(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	AccumulateSquare(src, &dst)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulateSquareWithMask(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+	AccumulateSquareWithMask(src, &dst, mask)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulateProduct(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	src2 := src.Clone()
+	defer src2.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	AccumulateProduct(src, src2, &dst)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulateProductWithMask(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	src2 := src.Clone()
+	defer src2.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+	AccumulateProductWithMask(src, src2, &dst, mask)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("Accumulate: dst is empty")
+	}
+}
+
+func TestAccumulatedWeighted(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	AccumulatedWeighted(src, &dst, 0.1)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("AccumulatedWeighted: dst is empty")
+	}
+}
+
+func TestAccumulatedWeightedWithMask(t *testing.T) {
+	src := IMRead("images/gocvlogo.jpg", IMReadUnchanged)
+	defer src.Close()
+
+	dst := NewMatWithSizes(src.Size(), MatTypeCV64FC3)
+	defer dst.Close()
+
+	mask := NewMat()
+	defer mask.Close()
+	AccumulatedWeightedWithMask(src, &dst, 0.1, mask)
+
+	if ok := dst.Empty(); ok {
+		t.Errorf("AccumulatedWeighted: dst is empty")
 	}
 }

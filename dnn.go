@@ -180,6 +180,7 @@ func (net *Net) ForwardLayers(outBlobNames []string) (blobs []Mat) {
 	blobs = make([]Mat, cMats.length)
 	for i := C.int(0); i < cMats.length; i++ {
 		blobs[i].p = C.Mats_get(cMats, i)
+		addMatToProfile(blobs[i].p)
 	}
 	return
 }
@@ -292,6 +293,7 @@ func ReadNetFromTensorflowBytes(model []byte) (Net, error) {
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromTensorflowBytes(*bModel))}, nil
 }
 
+<<<<<<< HEAD
 func ReadNetFromDarknet(config string, weights string) Net {
 	cfg := C.CString(config)
 	defer C.free(unsafe.Pointer(cfg))
@@ -313,6 +315,8 @@ func ReadNetFromDarknetBytes(config []byte, weights []byte) (Net, error) {
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromDarknetBytes(*cfg, *model))}, nil
 }
 
+=======
+>>>>>>> upstream/release
 // ReadNetFromTorch reads a network model stored in Torch framework's format (t7).
 //   check net.Empty() for read failure
 //
@@ -323,6 +327,31 @@ func ReadNetFromTorch(model string) Net {
 	cmodel := C.CString(model)
 	defer C.free(unsafe.Pointer(cmodel))
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromTorch(cmodel))}
+}
+
+// ReadNetFromONNX reads a network model stored in ONNX framework's format.
+//   check net.Empty() for read failure
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga7faea56041d10c71dbbd6746ca854197
+//
+func ReadNetFromONNX(model string) Net {
+	cmodel := C.CString(model)
+	defer C.free(unsafe.Pointer(cmodel))
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromONNX(cmodel))}
+}
+
+// ReadNetFromONNXBytes reads a network model stored in ONNX framework's format.
+//
+// For further details, please see:
+// https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga9198ecaac7c32ddf0aa7a1bcbd359567
+//
+func ReadNetFromONNXBytes(model []byte) (Net, error) {
+	bModel, err := toByteArray(model)
+	if err != nil {
+		return Net{}, err
+	}
+	return Net{p: unsafe.Pointer(C.Net_ReadNetFromONNXBytes(*bModel))}, nil
 }
 
 // BlobFromImage creates 4-dimensional blob from image. Optionally resizes and crops
@@ -516,7 +545,11 @@ func (l *Layer) OutputNameToIndex(name string) int {
 //
 // For futher details, please see:
 // https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+<<<<<<< HEAD
 func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32) (indices []int) {
+=======
+func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int) {
+>>>>>>> upstream/release
 	bboxesRectArr := []C.struct_Rect{}
 	for _, v := range bboxes {
 		bbox := C.struct_Rect{
@@ -554,7 +587,10 @@ func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32
 
 	ptr := *(*[]C.int)(unsafe.Pointer(h))
 
+<<<<<<< HEAD
 	indices = make([]int, int(indicesVector.length))
+=======
+>>>>>>> upstream/release
 	for i := 0; i < int(indicesVector.length); i++ {
 		indices[i] = int(ptr[i])
 	}
@@ -565,7 +601,11 @@ func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32
 //
 // For futher details, please see:
 // https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
+<<<<<<< HEAD
 func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, eta float32, topK int) (indices []int) {
+=======
+func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int, eta float32, topK int) {
+>>>>>>> upstream/release
 	bboxesRectArr := []C.struct_Rect{}
 	for _, v := range bboxes {
 		bbox := C.struct_Rect{
@@ -603,7 +643,10 @@ func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThresho
 
 	ptr := *(*[]C.int)(unsafe.Pointer(h))
 
+<<<<<<< HEAD
 	indices = make([]int, int(indicesVector.length))
+=======
+>>>>>>> upstream/release
 	for i := 0; i < int(indicesVector.length); i++ {
 		indices[i] = int(ptr[i])
 	}

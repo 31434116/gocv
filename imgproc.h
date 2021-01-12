@@ -5,8 +5,7 @@
 
 #ifdef __cplusplus
 #include <opencv2/opencv.hpp>
-extern "C"
-{
+extern "C" {
 #endif
 #ifdef __cplusplus
 typedef cv::Ptr<cv::CLAHE> *CLAHE;
@@ -43,12 +42,12 @@ struct RotatedRect FitEllipse(Points points);
 void MinEnclosingCircle(Points points, Point2f *center, float *radius);
 struct Contours FindContours(Mat src, int mode, int method);
 int ConnectedComponents(Mat src, Mat dst, int connectivity, int ltype, int ccltype);
-int ConnectedComponentsWithStats(Mat src, Mat labels, Mat stats, Mat centroids, int connectivity, int ltype, int ccltype);
+int ConnectedComponentsWithStats(Mat src, Mat labels, Mat stats, Mat centroids, int connectivity, int ltype,
+                                 int ccltype);
 void GaussianBlur(Mat src, Mat dst, Size ps, double sX, double sY, int bt);
 Mat GetGaussianKernel(int ksize, double sigma, int ktype);
 void Laplacian(Mat src, Mat dst, int dDepth, int kSize, double scale, double delta, int borderType);
-void Scharr(Mat src, Mat dst, int dDepth, int dx, int dy, double scale, double delta,
-    int borderType);
+void Scharr(Mat src, Mat dst, int dDepth, int dx, int dy, double scale, double delta, int borderType);
 Mat GetStructuringElement(int shape, Size ksize);
 Scalar MorphologyDefaultBorderValue();
 void MorphologyEx(Mat src, Mat dst, int op, Mat kernel);
@@ -59,38 +58,35 @@ void CornerSubPix(Mat img, Mat corners, Size winSize, Size zeroZone, TermCriteri
 void GoodFeaturesToTrack(Mat img, Mat corners, int maxCorners, double quality, double minDist);
 void GrabCut(Mat img, Mat mask, Rect rect, Mat bgdModel, Mat fgdModel, int iterCount, int mode);
 void HoughCircles(Mat src, Mat circles, int method, double dp, double minDist);
-void HoughCirclesWithParams(Mat src, Mat circles, int method, double dp, double minDist,
-    double param1, double param2, int minRadius, int maxRadius);
+void HoughCirclesWithParams(Mat src, Mat circles, int method, double dp, double minDist, double param1, double param2,
+                            int minRadius, int maxRadius);
 void HoughLines(Mat src, Mat lines, double rho, double theta, int threshold);
 void HoughLinesP(Mat src, Mat lines, double rho, double theta, int threshold);
-void HoughLinesPWithParams(Mat src, Mat lines, double rho, double theta, int threshold, double minLineLength, double maxLineGap);
-void HoughLinesPointSet(Mat points, Mat lines, int lines_max, int threshold,
-    double min_rho, double max_rho, double rho_step,
-    double min_theta, double max_theta, double theta_step);
+void HoughLinesPWithParams(Mat src, Mat lines, double rho, double theta, int threshold, double minLineLength,
+                           double maxLineGap);
+void HoughLinesPointSet(Mat points, Mat lines, int lines_max, int threshold, double min_rho, double max_rho,
+                        double rho_step, double min_theta, double max_theta, double theta_step);
 void Integral(Mat src, Mat sum, Mat sqsum, Mat tilted);
 double Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ);
-void AdaptiveThreshold(Mat src, Mat dst, double maxValue, int adaptiveTyp, int typ, int blockSize,
-    double c);
+void AdaptiveThreshold(Mat src, Mat dst, double maxValue, int adaptiveTyp, int typ, int blockSize, double c);
 void ArrowedLine(Mat img, Point pt1, Point pt2, Scalar color, int thickness);
 void Circle(Mat img, Point center, int radius, Scalar color, int thickness);
-void Ellipse(Mat img, Point center, Point axes, double angle, double
-             startAngle, double endAngle, Scalar color, int thickness);
+void Ellipse(Mat img, Point center, Point axes, double angle, double startAngle, double endAngle, Scalar color,
+             int thickness);
 void Line(Mat img, Point pt1, Point pt2, Scalar color, int thickness);
 void Rectangle(Mat img, Rect rect, Scalar color, int thickness);
 void FillPoly(Mat img, Contours points, Scalar color);
 void Polylines(Mat img, Contours points, bool isClosed, Scalar color, int thickness);
-struct Size GetTextSize(const char* text, int fontFace, double fontScale, int thickness);
-struct Size GetTextSizeWithBaseline(const char* text, int fontFace, double fontScale, int thickness, int* baseline);
-void PutText(Mat img, const char* text, Point org, int fontFace, double fontScale,
-             Scalar color, int thickness);
-void PutTextWithParams(Mat img, const char* text, Point org, int fontFace, double fontScale,
-                         Scalar color, int thickness, int lineType, bool bottomLeftOrigin);
+struct Size GetTextSize(const char *text, int fontFace, double fontScale, int thickness);
+struct Size GetTextSizeWithBaseline(const char *text, int fontFace, double fontScale, int thickness, int *baseline);
+void PutText(Mat img, const char *text, Point org, int fontFace, double fontScale, Scalar color, int thickness);
+void PutTextWithParams(Mat img, const char *text, Point org, int fontFace, double fontScale, Scalar color,
+                       int thickness, int lineType, bool bottomLeftOrigin);
 void Resize(Mat src, Mat dst, Size sz, double fx, double fy, int interp);
 void GetRectSubPix(Mat src, Size patchSize, Point center, Mat dst);
 Mat GetRotationMatrix2D(Point center, double angle, double scale);
 void WarpAffine(Mat src, Mat dst, Mat rot_mat, Size dsize);
-void WarpAffineWithParams(Mat src, Mat dst, Mat rot_mat, Size dsize, int flags, int borderMode,
-                          Scalar borderValue);
+void WarpAffineWithParams(Mat src, Mat dst, Mat rot_mat, Size dsize, int flags, int borderMode, Scalar borderValue);
 void WarpPerspective(Mat src, Mat dst, Mat m, Size dsize);
 void Watershed(Mat image, Mat markers);
 void ApplyColorMap(Mat src, Mat dst, int colormap);
@@ -99,7 +95,8 @@ Mat GetPerspectiveTransform(Contour src, Contour dst);
 Mat GetPerspectiveTransform2f(Contour2f src, Contour2f dst);
 Mat GetAffineTransform(Contour src, Contour dst);
 Mat GetAffineTransform2f(Contour2f src, Contour2f dst);
-Mat FindHomography(Mat src, Mat dst, int method, double ransacReprojThreshold, Mat mask, const int maxIters, const double confidence) ;
+Mat FindHomography(Mat src, Mat dst, int method, double ransacReprojThreshold, Mat mask, const int maxIters,
+                   const double confidence);
 void DrawContours(Mat src, Contours contours, int contourIdx, Scalar color, int thickness);
 void Sobel(Mat src, Mat dst, int ddepth, int dx, int dy, int ksize, double scale, double delta, int borderType);
 void SpatialGradient(Mat src, Mat dx, Mat dy, int ksize, int borderType);
@@ -115,9 +112,16 @@ CLAHE CLAHE_CreateWithParams(double clipLimit, Size tileGridSize);
 void CLAHE_Close(CLAHE c);
 void CLAHE_Apply(CLAHE c, Mat src, Mat dst);
 void InvertAffineTransform(Mat src, Mat dst);
-Point2f PhaseCorrelate(Mat src1, Mat src2, Mat window, double* response);
-
-    #ifdef __cplusplus
+Point2f PhaseCorrelate(Mat src1, Mat src2, Mat window, double *response);
+void Mat_Accumulate(Mat src, Mat dst);
+void Mat_AccumulateWithMask(Mat src, Mat dst, Mat mask);
+void Mat_AccumulateSquare(Mat src, Mat dst);
+void Mat_AccumulateSquareWithMask(Mat src, Mat dst, Mat mask);
+void Mat_AccumulateProduct(Mat src1, Mat src2, Mat dst);
+void Mat_AccumulateProductWithMask(Mat src1, Mat src2, Mat dst, Mat mask);
+void Mat_AccumulatedWeighted(Mat src, Mat dst, double alpha);
+void Mat_AccumulatedWeightedWithMask(Mat src, Mat dst, double alpha, Mat mask);
+#ifdef __cplusplus
 }
 #endif
 

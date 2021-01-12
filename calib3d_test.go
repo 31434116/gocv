@@ -353,7 +353,11 @@ func TestFisheyeUndistortPoint(t *testing.T) {
 	}
 
 }
+<<<<<<< HEAD
 func TestFindChessboard(t *testing.T) {
+=======
+func TestFindAndDrawChessboard(t *testing.T) {
+>>>>>>> upstream/release
 	img := IMRead("images/chessboard_4x6.png", IMReadUnchanged)
 	if img.Empty() {
 		t.Error("Invalid read of chessboard image")
@@ -372,6 +376,39 @@ func TestFindChessboard(t *testing.T) {
 	if corners.Empty() {
 		t.Error("chessboard pattern not found")
 		return
+	}
+
+	img2 := NewMatWithSize(150, 150, MatTypeCV8U)
+	defer img2.Close()
+
+	DrawChessboardCorners(&img2, image.Pt(4, 6), corners, true)
+	if img2.Empty() {
+		t.Error("Error in DrawChessboardCorners test")
+	}
+}
+
+func TestEstimateAffinePartial2D(t *testing.T) {
+	src := []Point2f{
+		{0, 0},
+		{10, 5},
+		{10, 10},
+		{5, 10},
+	}
+	dst := []Point2f{
+		{0, 0},
+		{10, 0},
+		{10, 10},
+		{0, 10},
+	}
+
+	m := EstimateAffinePartial2D(src, dst)
+	defer m.Close()
+
+	if m.Cols() != 3 {
+		t.Errorf("TestEstimateAffinePartial2D(): unexpected cols = %v, want = %v", m.Cols(), 3)
+	}
+	if m.Rows() != 2 {
+		t.Errorf("TestEstimateAffinePartial2D(): unexpected rows = %v, want = %v", m.Rows(), 2)
 	}
 }
 

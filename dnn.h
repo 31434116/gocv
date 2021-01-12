@@ -29,6 +29,8 @@ Net Net_ReadNetFromTensorflowBytes(struct ByteArray model);
 Net Net_ReadNetFromTorch(const char* model);
 Net Net_ReadNetFromDarknet(const char *config, const char *weights);
 Net Net_ReadNetFromDarknetBytes(struct ByteArray config, struct ByteArray weights);
+Net Net_ReadNetFromONNX(const char* model);
+Net Net_ReadNetFromONNXBytes(struct ByteArray model);
 Mat Net_BlobFromImage(Mat image, double scalefactor, Size size, Scalar mean, bool swapRB,
                       bool crop);
 void Net_BlobFromImages(struct Mats images, Mat blob,  double scalefactor, Size size, 

@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"image"
 	"image/color"
-	"image/draw"
 	_ "image/jpeg"
 	_ "image/png"
-	"log"
-	"os"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -21,16 +19,199 @@ func TestMat(t *testing.T) {
 	}
 }
 
-func TestMatFromBytesWithEmptyByteSlise(t *testing.T) {
+func TestMatWithSizes(t *testing.T) {
+	t.Run("create mat with multidimensional array", func(t *testing.T) {
+		sizes := []int{100, 100, 100}
+		mat := NewMatWithSizes(sizes, MatTypeCV8U)
+		defer mat.Close()
+		if mat.Empty() {
+			t.Error("NewMatWithSizes should not be empty")
+		}
+
+		for i, val := range mat.Size() {
+			if val != sizes[i] {
+				t.Errorf("NewMatWithSizes incorrect size: %v\n", mat.Size())
+			}
+		}
+
+		if mat.Rows() != -1 {
+			t.Errorf("NewMatWithSizes incorrect row count: %v\n", mat.Rows())
+		}
+
+		if mat.Cols() != -1 {
+			t.Errorf("NewMatWithSizes incorrect col count: %v\n", mat.Cols())
+		}
+
+		if mat.Channels() != 1 {
+			t.Errorf("NewMatWithSizes incorrect channels count: %v\n", mat.Channels())
+		}
+
+		if mat.Type() != MatTypeCV8U {
+			t.Errorf("NewMatWithSizes incorrect type: %v\n", mat.Type())
+		}
+
+		if mat.Total() != 100*100*100 {
+			t.Errorf("NewMatWithSizes incorrect total: %v\n", mat.Total())
+		}
+	})
+
+	t.Run("create 2x3x3 multidimensional array with 3 channels and scalar", func(t *testing.T) {
+		sizes := []int{2, 3, 3}
+		s := NewScalar(255.0, 105.0, 180.0, 0.0)
+		mat := NewMatWithSizesWithScalar(sizes, MatTypeCV32FC3, s)
+		defer mat.Close()
+		if mat.Empty() {
+			t.Error("NewMatWithSizesWithScalar should not be empty")
+		}
+
+		for i, val := range mat.Size() {
+			if val != sizes[i] {
+				t.Errorf("NewMatWithSizesWithScalar incorrect size: %v\n", mat.Size())
+			}
+		}
+
+		if mat.Rows() != -1 {
+			t.Errorf("NewMatWithSizesWithScalar incorrect row count: %v\n", mat.Rows())
+		}
+
+		if mat.Cols() != -1 {
+			t.Errorf("NewMatWithSizesWithScalar incorrect col count: %v\n", mat.Cols())
+		}
+
+		if mat.Channels() != 3 {
+			t.Errorf("NewMatWithSizesWithScalar incorrect channels count: %v\n", mat.Channels())
+		}
+
+		if mat.Type() != MatTypeCV32FC3 {
+			t.Errorf("NewMatWithSizesWithScalar incorrect type: %v\n", mat.Type())
+		}
+
+		if mat.Total() != 2*3*3 {
+			t.Errorf("NewMatWithSizesWithScalar incorrect total: %v\n", mat.Total())
+		}
+
+		matChans := Split(mat)
+		scalar := []float32{255.0, 105.0, 180.0}
+		for c := 0; c < mat.Channels(); c++ {
+			for x := 0; x < sizes[0]; x++ {
+				for y := 0; y < sizes[1]; y++ {
+					for z := 0; z < sizes[2]; z++ {
+						if s := matChans[c].GetFloatAt3(x, y, z); s != scalar[c] {
+							t.Errorf("NewMatWithSizesWithScalar incorrect scalar: %v\n", s)
+						}
+					}
+				}
+			}
+		}
+		for _, ch := range matChans {
+			ch.Close()
+		}
+	})
+
+	t.Run("create 1x2x3 multidimensional array with 3 channel and data", func(t *testing.T) {
+		sizes := []int{1, 2, 3}
+
+		// generate byte array
+		s := NewScalar(255.0, 123.0, 55.0, 0.0)
+		mat1 := NewMatWithSizesWithScalar(sizes, MatTypeCV32FC2, s)
+		defer mat1.Close()
+		b := mat1.ToBytes()
+
+		mat, err := NewMatWithSizesFromBytes(sizes, MatTypeCV32FC2, b)
+		defer mat.Close()
+		if err != nil {
+			t.Errorf("NewMatWithSizesFromBytes %v\n", err)
+		}
+		if mat.Empty() {
+			t.Error("NewMatWithSizesFromBytes should not be empty")
+		}
+
+		mat2, err := NewMatWithSizesFromBytes(sizes, MatTypeCV32FC2, nil)
+		defer mat2.Close()
+		if err == nil {
+			t.Error("NewMatWithSizesFromBytes should return error with empty bytes")
+		}
+
+		b1 := mat.ToBytes()
+		if !bytes.Equal(b, b1) {
+			t.Error("NewMatWithSizesFromBytes byte arrays not equal")
+		}
+
+		for i, val := range mat.Size() {
+			if val != sizes[i] {
+				t.Errorf("NewMatWithSizesFromBytes incorrect size: %v\n", mat.Size())
+			}
+		}
+
+		if mat.Rows() != -1 {
+			t.Errorf("NewMatWithSizesFromBytes incorrect row count: %v\n", mat.Rows())
+		}
+
+		if mat.Cols() != -1 {
+			t.Errorf("NewMatWithSizesFromBytes incorrect col count: %v\n", mat.Cols())
+		}
+
+		if mat.Channels() != 2 {
+			t.Errorf("NewMatWithSizesFromBytes incorrect channels count: %v\n", mat.Channels())
+		}
+
+		if mat.Type() != MatTypeCV32FC2 {
+			t.Errorf("NewMatWithSizesFromBytes incorrect type: %v\n", mat.Type())
+		}
+
+		if mat.Total() != 1*2*3 {
+			t.Errorf("NewMatWithSizesFromBytes incorrect total: %v\n", mat.Total())
+		}
+
+		matChans := Split(mat)
+		scalar := []float32{255.0, 123.0, 55.0}
+		for c := 0; c < mat.Channels(); c++ {
+			for x := 0; x < sizes[0]; x++ {
+				for y := 0; y < sizes[1]; y++ {
+					for z := 0; z < sizes[2]; z++ {
+						if s := matChans[c].GetFloatAt3(x, y, z); s != scalar[c] {
+							t.Errorf("NewMatWithSizesFromBytes incorrect value: %v\n", s)
+						}
+					}
+				}
+			}
+		}
+		for _, ch := range matChans {
+			ch.Close()
+		}
+	})
+}
+
+func TestMatFromBytesWithEmptyByteSlice(t *testing.T) {
 	_, err := NewMatFromBytes(600, 800, MatTypeCV8U, []byte{})
 	if err == nil {
 		t.Error("TestMatFromBytesWithEmptyByteSlise: " +
-			"must fail because of an empty byte slise")
+			"must fail because of an empty byte slice")
 	}
 	if !strings.Contains(err.Error(), ErrEmptyByteSlice.Error()) {
-		t.Errorf("TestMatFromBytesWithEmptyByteSlise: "+
+		t.Errorf("TestMatFromBytesWithEmptyByteSlice: "+
 			"error must contain the following description: "+
 			"%v, but have: %v", ErrEmptyByteSlice, err)
+	}
+}
+
+func TestMatFromBytesSliceGarbageCollected(t *testing.T) {
+	data := []byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	m, err := NewMatFromBytes(2, 5, MatTypeCV8U, data)
+	if err != nil {
+		t.Error("TestMatFromBytesSliceGarbageCollected: " +
+			"failed to create Mat")
+	}
+	defer m.Close()
+
+	// Force garbage collection. As data is not used after this, its backing array should
+	// be collected.
+	runtime.GC()
+
+	v := m.GetUCharAt(0, 0)
+	if v != 0 {
+		t.Errorf("TestMatFromBytesSliceGarbageCollected: "+
+			"unexpected value. Want %d, got %d.", 0, v)
 	}
 }
 
@@ -55,6 +236,10 @@ func TestMatWithSize(t *testing.T) {
 
 	if mat.Type() != 0 {
 		t.Errorf("NewMatWithSize incorrect type: %v\n", mat.Type())
+	}
+
+	if mat.Step() != 102 {
+		t.Errorf("NewMatWithSize incorrect step count: %v\n", mat.Step())
 	}
 }
 
@@ -86,6 +271,10 @@ func TestMatWithSizeFromScalar(t *testing.T) {
 		t.Errorf("incorrect total: %v\n", mat.Total())
 	}
 
+	if mat.Step() != 9 {
+		t.Errorf("NewMatWithSizeFromScalar incorrect step count: %v\n", mat.Step())
+	}
+
 	sz := mat.Size()
 	if sz[0] != 2 && sz[1] != 3 {
 		t.Errorf("NewMatWithSize incorrect size: %v\n", sz)
@@ -101,6 +290,9 @@ func TestMatWithSizeFromScalar(t *testing.T) {
 				}
 			}
 		}
+	}
+	for _, i := range matChans {
+		i.Close()
 	}
 }
 
@@ -222,6 +414,68 @@ func TestMatToBytes(t *testing.T) {
 	}
 }
 
+func TestMatEye(t *testing.T) {
+	data := []byte{1, 0, 0, 1}
+	e := Eye(2, 2, MatTypeCV8U)
+
+	if bytes.Compare(e.ToBytes(), data) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+	e.Close()
+
+	data2 := []byte{1, 0, 0, 0, 1, 0}
+	e2 := Eye(2, 3, MatTypeCV8U)
+	if bytes.Compare(e2.ToBytes(), data2) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+
+	val := e2.GetUCharAt(0, 2)
+	if val != 0 {
+		t.Errorf("Mat bytes unexpected value at [0,2]: %v\n", val)
+	}
+	e2.Close()
+}
+
+func TestMatZeros(t *testing.T) {
+	expected := NewMatWithSize(2, 3, MatTypeCV8U)
+	z := Zeros(2, 3, MatTypeCV8U)
+
+	if bytes.Compare(z.ToBytes(), expected.ToBytes()) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+
+	expected.Close()
+	z.Close()
+
+	expected2 := NewMatWithSize(2, 3, MatTypeCV64F)
+	z2 := Zeros(2, 3, MatTypeCV64F)
+
+	if bytes.Compare(z2.ToBytes(), expected2.ToBytes()) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+	expected2.Close()
+	z2.Close()
+}
+
+func TestMatOnes(t *testing.T) {
+	expected := NewMatWithSizeFromScalar(Scalar{Val1: 1}, 2, 3, MatTypeCV8U)
+	o := Ones(2, 3, MatTypeCV8U)
+	if bytes.Compare(o.ToBytes(), expected.ToBytes()) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+	defer expected.Close()
+	defer o.Close()
+
+	expected2 := NewMatWithSizeFromScalar(Scalar{Val1: 1}, 2, 1, MatTypeCV64F)
+	o2 := Ones(2, 1, MatTypeCV64F)
+
+	if bytes.Compare(o2.ToBytes(), expected2.ToBytes()) != 0 {
+		t.Errorf("Mat bytes are not equal")
+	}
+	expected2.Close()
+	o2.Close()
+}
+
 func TestMatDataPtr(t *testing.T) {
 	const (
 		rows = 101
@@ -241,7 +495,10 @@ func TestMatDataPtr(t *testing.T) {
 		mat1 := NewMatWithSize(rows, cols, MatTypeCV8U)
 		defer mat1.Close()
 
-		b := mat1.DataPtrUint8()
+		b, err := mat1.DataPtrUint8()
+		if err != nil {
+			t.Error(err)
+		}
 		if len(b) != 101*102 {
 			t.Errorf("Mat bytes incorrect length: %v\n", len(b))
 		}
@@ -256,9 +513,19 @@ func TestMatDataPtr(t *testing.T) {
 
 		mat2 := NewMatWithSize(3, 9, MatTypeCV32F)
 		defer mat2.Close()
-		b = mat2.DataPtrUint8()
+		b, err = mat2.DataPtrUint8()
+		if err != nil {
+			t.Error(err)
+		}
 		if len(b) != 3*9*4 {
 			t.Errorf("Mat bytes incorrect length: %v\n", len(b))
+		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrUint8()
+		if err == nil {
+			t.Errorf("Expected error.")
 		}
 	})
 	t.Run("Int8", func(t *testing.T) {
@@ -275,7 +542,11 @@ func TestMatDataPtr(t *testing.T) {
 		mat1 := NewMatWithSize(101, 102, MatTypeCV8S)
 		defer mat1.Close()
 
-		b := mat1.DataPtrInt8()
+		b, err := mat1.DataPtrInt8()
+		if err != nil {
+			t.Error(err)
+		}
+
 		if len(b) != rows*cols {
 			t.Errorf("Mat bytes incorrect length: %v\n", len(b))
 		}
@@ -290,9 +561,19 @@ func TestMatDataPtr(t *testing.T) {
 
 		mat2 := NewMatWithSize(3, 9, MatTypeCV32F)
 		defer mat2.Close()
-		b = mat2.DataPtrInt8()
+		b, err = mat2.DataPtrInt8()
+		if err != nil {
+			t.Error(err)
+		}
 		if len(b) != 3*9*4 {
 			t.Errorf("Mat bytes incorrect length: %v\n", len(b))
+		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrInt8()
+		if err == nil {
+			t.Errorf("Expected error.")
 		}
 	})
 	t.Run("Uint16", func(t *testing.T) {
@@ -328,6 +609,13 @@ func TestMatDataPtr(t *testing.T) {
 		mat2 := NewMatWithSize(3, 9, MatTypeCV32F)
 		defer mat2.Close()
 		_, err = mat2.DataPtrUint16()
+		if err == nil {
+			t.Errorf("Expected error.")
+		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrUint16()
 		if err == nil {
 			t.Errorf("Expected error.")
 		}
@@ -368,6 +656,13 @@ func TestMatDataPtr(t *testing.T) {
 		if err == nil {
 			t.Errorf("Expected error.")
 		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrInt16()
+		if err == nil {
+			t.Errorf("Expected error.")
+		}
 	})
 	t.Run("Float32", func(t *testing.T) {
 		testPoints := []struct {
@@ -405,6 +700,13 @@ func TestMatDataPtr(t *testing.T) {
 		if err == nil {
 			t.Errorf("Expected error.")
 		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrFloat32()
+		if err == nil {
+			t.Errorf("Expected error.")
+		}
 	})
 	t.Run("Float64", func(t *testing.T) {
 		testPoints := []struct {
@@ -439,6 +741,13 @@ func TestMatDataPtr(t *testing.T) {
 		mat2 := NewMatWithSize(3, 9, MatTypeCV16S)
 		defer mat2.Close()
 		_, err = mat2.DataPtrFloat64()
+		if err == nil {
+			t.Errorf("Expected error.")
+		}
+
+		mat3 := mat1.Region(image.Rect(25, 25, 75, 75))
+		defer mat3.Close()
+		_, err = mat3.DataPtrFloat64()
 		if err == nil {
 			t.Errorf("Expected error.")
 		}
@@ -1426,6 +1735,9 @@ func TestMatSplit(t *testing.T) {
 	dst := NewMat()
 	defer dst.Close()
 	Merge(chans, &dst)
+	for _, ch := range chans {
+		ch.Close()
+	}
 	diff := NewMat()
 	defer diff.Close()
 	AbsDiff(src, dst, &diff)
@@ -2054,6 +2366,10 @@ func TestMixChannels(t *testing.T) {
 		}
 	}
 
+	for _, ch := range bgrChans {
+		ch.Close()
+	}
+
 	alphaChans := Split(alpha)
 	scalarByte = []byte{255}
 	for c := 0; c < alpha.Channels(); c++ {
@@ -2065,133 +2381,52 @@ func TestMixChannels(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestMatToImage(t *testing.T) {
-	mat1 := NewMatWithSize(101, 102, MatTypeCV8UC3)
-	defer mat1.Close()
-
-	img, err := mat1.ToImage()
-	if err != nil {
-		t.Errorf("TestToImage %v.", err)
-	}
-
-	if img.Bounds().Dx() != 102 {
-		t.Errorf("TestToImage incorrect width got %d.", img.Bounds().Dx())
-	}
-
-	if img.Bounds().Dy() != 101 {
-		t.Errorf("TestToImage incorrect height got %d.", img.Bounds().Dy())
-	}
-
-	mat2 := NewMatWithSize(101, 102, MatTypeCV8UC1)
-	defer mat2.Close()
-
-	img, err = mat2.ToImage()
-	if err != nil {
-		t.Errorf("TestToImage %v.", err)
-	}
-
-	mat3 := NewMatWithSize(101, 102, MatTypeCV8UC4)
-	defer mat3.Close()
-
-	img, err = mat3.ToImage()
-	if err != nil {
-		t.Errorf("TestToImage %v.", err)
-	}
-
-	matWithUnsupportedType := NewMatWithSize(101, 102, MatTypeCV8S)
-	defer matWithUnsupportedType.Close()
-
-	_, err = matWithUnsupportedType.ToImage()
-	if err == nil {
-		t.Error("TestToImage expected error got nil.")
-	}
-}
-
-//Tests that image is the same after converting to Mat and back to Image
-func TestImageToMatRGBA(t *testing.T) {
-	file, err := os.Open("images/gocvlogo.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	img0, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	mat, err := ImageToMatRGBA(img0)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer mat.Close()
-	img1, err := mat.ToImage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !compareImages(img0, img1) {
-		t.Errorf("Image after converting to Mat and back to Image isn't the same")
-	}
-}
-
-//Tests that image is the same after converting to Mat and back to Image
-func TestImageToMatRGB(t *testing.T) {
-	file, err := os.Open("images/gocvlogo.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	img0, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	mat, err := ImageToMatRGB(img0)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer mat.Close()
-	img1, err := mat.ToImage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !compareImages(img0, img1) {
-		t.Errorf("Image after converting to Mat and back to Image isn't the same")
-	}
-}
-
-func TestImageGrayToMatGray(t *testing.T) {
-	file, err := os.Open("images/gocvlogo.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	imgSrc, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	img0 := image.NewGray(imgSrc.Bounds())
-	draw.Draw(img0, imgSrc.Bounds(), imgSrc, image.ZP, draw.Src)
-
-	mat, err := ImageGrayToMatGray(img0)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer mat.Close()
-	img1, err := mat.ToImage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !compareImages(img0, img1) {
-		t.Errorf("Image after converting to Mat and back to Image isn't the same")
+	for _, ch := range alphaChans {
+		ch.Close()
 	}
 }
 
 func TestGetVecfAt(t *testing.T) {
+	var cases = []struct {
+		m            Mat
+		expectedSize int
+	}{
+		{NewMatWithSize(1, 1, MatTypeCV32FC1), 1},
+		{NewMatWithSize(1, 1, MatTypeCV32FC2), 2},
+		{NewMatWithSize(1, 1, MatTypeCV32FC3), 3},
+		{NewMatWithSize(1, 1, MatTypeCV32FC4), 4},
+	}
+
+	for _, c := range cases {
+		vec := c.m.GetVecfAt(0, 0)
+		if len := len(vec); len != c.expectedSize {
+			t.Errorf("TestGetVecfAt: expected %d, got: %d.", c.expectedSize, len)
+		}
+		c.m.Close()
+	}
+}
+
+func TestGetVecdAt(t *testing.T) {
+	var cases = []struct {
+		m            Mat
+		expectedSize int
+	}{
+		{NewMatWithSize(1, 1, MatTypeCV64FC1), 1},
+		{NewMatWithSize(1, 1, MatTypeCV64FC2), 2},
+		{NewMatWithSize(1, 1, MatTypeCV64FC3), 3},
+		{NewMatWithSize(1, 1, MatTypeCV64FC4), 4},
+	}
+
+	for _, c := range cases {
+		vec := c.m.GetVecdAt(0, 0)
+		if len := len(vec); len != c.expectedSize {
+			t.Errorf("TestGetVecdAt: expected %d, got: %d.", c.expectedSize, len)
+		}
+		c.m.Close()
+	}
+}
+
+func TestGetVecbAt(t *testing.T) {
 	var cases = []struct {
 		m            Mat
 		expectedSize int
@@ -2203,9 +2438,9 @@ func TestGetVecfAt(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		vec := c.m.GetVecfAt(0, 0)
+		vec := c.m.GetVecbAt(0, 0)
 		if len := len(vec); len != c.expectedSize {
-			t.Errorf("TestGetVecfAt: expected %d, got: %d.", c.expectedSize, len)
+			t.Errorf("TestGetVecbAt: expected %d, got: %d.", c.expectedSize, len)
 		}
 		c.m.Close()
 	}
@@ -2327,6 +2562,19 @@ func TestColRowRange(t *testing.T) {
 	defer submatCols.Close()
 	if submatCols.Cols() != 50 {
 		t.Errorf("TestColRowRange incorrect submatCols count: %v\n", submatCols.Cols())
+	}
+}
+
+func TestNormWithMats(t *testing.T) {
+	mat1 := NewMatWithSize(100, 100, MatTypeCV8UC1)
+	defer mat1.Close()
+
+	mat2 := NewMatWithSize(100, 100, MatTypeCV8UC1)
+	defer mat2.Close()
+
+	d := NormWithMats(mat1, mat2, NormInf)
+	if d != 0 {
+		t.Fatal("expected 0")
 	}
 }
 
