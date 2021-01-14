@@ -442,6 +442,17 @@ void IntVector_Close(struct IntVector ivec);
 
 void CStrings_Close(struct CStrings cstrs);
 
+Mat Mat_row(Mat m, int row);
+Mat Mat_col(Mat m, int col);
+
+void FloatVector_Close(struct FloatVector fvec);
+void DoubleVector_Close(struct DoubleVector dvec);
+
+Mat Mat_SimilarityTransform(Mat src, Mat dst);
+
+bool Mat_CholeskyFloat(Mat A, Mat b);
+bool Mat_CholeskyDouble(Mat A, Mat b);
+
 #ifdef __cplusplus
 }
 #endif
