@@ -2,10 +2,6 @@ version: 2.1
 jobs:
   build:
     docker:
-<<<<<<< HEAD
-      - image: gocv/opencv:4.5.0
-    working_directory: /usr/local/go/src/github.com/hybridgroup/gocv
-=======
       - image: gocv/opencv:4.5.1
     working_directory: /usr/local/go/src/github.com/hybridgroup/gocv
     environment:
@@ -14,7 +10,6 @@ jobs:
         GOCV_TENSORFLOW_TEST_FILES: "/usr/local/go/src/github.com/hybridgroup/gocv/testdata"
         GOCV_ONNX_TEST_FILES: "/usr/local/go/src/github.com/hybridgroup/gocv/testdata"
         OPENCV_ENABLE_NONFREE: ON
->>>>>>> upstream/release
     steps:
       - checkout
       - run:
@@ -37,15 +32,6 @@ jobs:
             curl -sL https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip > /usr/local/go/src/github.com/hybridgroup/gocv/testdata/inception5h.zip
             unzip -o /usr/local/go/src/github.com/hybridgroup/gocv/testdata/inception5h.zip tensorflow_inception_graph.pb -d /usr/local/go/src/github.com/hybridgroup/gocv/testdata
       - run:
-<<<<<<< HEAD
-          name: Run tests
-          command: xvfb-run -a --error-file /var/log/xvfb_error.log --server-args="-screen 0 1024x768x24 +extension RANDR" go test -v . ./contrib
-          environment:
-              DISPLAY: 99.0
-              GOCV_CAFFE_TEST_FILES: "/usr/local/go/src/github.com/hybridgroup/gocv/testdata"
-              GOCV_TENSORFLOW_TEST_FILES: "/usr/local/go/src/github.com/hybridgroup/gocv/testdata"
-              OPENCV_ENABLE_NONFREE: ON
-=======
           name: "Install ONNX test model"
           command: |
             mkdir -p testdata
@@ -64,4 +50,3 @@ jobs:
             cat contrib.txt >> coverage.txt
             rm contrib.txt;
             bash <(curl -s https://codecov.io/bash)
->>>>>>> upstream/release

@@ -353,11 +353,7 @@ func TestFisheyeUndistortPoint(t *testing.T) {
 	}
 
 }
-<<<<<<< HEAD
-func TestFindChessboard(t *testing.T) {
-=======
 func TestFindAndDrawChessboard(t *testing.T) {
->>>>>>> upstream/release
 	img := IMRead("images/chessboard_4x6.png", IMReadUnchanged)
 	if img.Empty() {
 		t.Error("Invalid read of chessboard image")

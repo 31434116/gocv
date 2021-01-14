@@ -16,10 +16,6 @@ Your pull requests will be greatly appreciated!
     - [ ] **Basic structures - WORK STARTED**
     - [ ] **Operations on arrays - WORK STARTED**. The following functions still need implementation:
         - [ ] [Mahalanobis](https://docs.opencv.org/master/d2/de8/group__core__array.html#ga4493aee129179459cbfc6064f051aa7d)
-<<<<<<< HEAD
-        - [x] [mixChannels](https://docs.opencv.org/master/d2/de8/group__core__array.html#ga51d768c270a1cdd3497255017c4504be)
-=======
->>>>>>> upstream/release
         - [ ] [mulTransposed](https://docs.opencv.org/master/d2/de8/group__core__array.html#gadc4e49f8f7a155044e3be1b9e3b270ab)
         - [ ] [PCABackProject](https://docs.opencv.org/master/d2/de8/group__core__array.html#gab26049f30ee8e94f7d69d82c124faafc)
         - [ ] [PCACompute](https://docs.opencv.org/master/d2/de8/group__core__array.html#ga4e2073c7311f292a0648f04c37b73781)
@@ -178,27 +174,14 @@ Your pull requests will be greatly appreciated!
 
 - [ ] **features2d. 2D Features Framework - WORK STARTED**
     - [X] **Feature Detection and Description**
-<<<<<<< HEAD
-    - [ ] **Descriptor Matchers - WORK STARTED** The following functions still need implementation:
-        - [X] [FlannBasedMatcher](https://docs.opencv.org/master/dc/de2/classcv_1_1FlannBasedMatcher.html)
-    - [ ] **Drawing Function of Keypoints and Matches - WORK STARTED** The following function still needs implementation:
-        - [X] [drawMatches](https://docs.opencv.org/master/d4/d5d/group__features2d__draw.html#ga7421b3941617d7267e3f2311582f49e1)
-=======
     - [X] **Descriptor Matchers**
     - [X] **Drawing Function of Keypoints and Matches**
->>>>>>> upstream/release
     - [ ] Object Categorization
         - [ ] [BOWImgDescriptorExtractor](https://docs.opencv.org/master/d2/d6b/classcv_1_1BOWImgDescriptorExtractor.html)
         - [ ] [BOWKMeansTrainer](https://docs.opencv.org/master/d4/d72/classcv_1_1BOWKMeansTrainer.html)
 
 - [X] **objdetect. Object Detection**
-<<<<<<< HEAD
-- [ ] **dnn. Deep Neural Network module - WORK STARTED** The following functions still need implementation:
-    - [X] [NMSBoxes](https://docs.opencv.org/master/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee)
-
-=======
 - [X] **dnn. Deep Neural Network module**
->>>>>>> upstream/release
 - [ ] ml. Machine Learning
 - [ ] flann. Clustering and Search in Multi-Dimensional Spaces
 - [ ] **photo. Computational Photography - WORK STARTED** The following functions still need implementation:
@@ -225,12 +208,9 @@ Your pull requests will be greatly appreciated!
     - [ ] [stylization](https://docs.opencv.org/master/df/dac/group__photo__render.html#gacb0f7324017df153d7b5d095aed53206)
 
 - [ ] stitching. Images stitching
-<<<<<<< HEAD
-=======
 
 ## CUDA
 
->>>>>>> upstream/release
 - [ ] **cudaarithm. Operations on Matrices - WORK STARTED** The following functions still need implementation:
     - [ ] [cv::cuda::abs](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#ga54a72bd772494ab34d05406fd76df2b6)
     - [ ] [cv::cuda::absdiff](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#gac062b283cf46ee90f74a773d3382ab54)
@@ -258,25 +238,14 @@ Your pull requests will be greatly appreciated!
     - [ ] [cv::cuda::sqr](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#ga8aae233da90ce0ffe309ab8004342acb)
     - [ ] [cv::cuda::sqrt](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#ga09303680cb1a5521a922b6d392028d8c)
     - [ ] [cv::cuda::subtract](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#ga6eab60fc250059e2fda79c5636bd067f)
-<<<<<<< HEAD
-    - [X] [cv::cuda::threshold](https://docs.opencv.org/master/d8/d34/group__cudaarithm__elem.html#ga40f1c94ae9a9456df3cad48e3cb008e1)
-=======
->>>>>>> upstream/release
 
 - [X] **cudabgsegm. Background Segmentation**
 - [ ] cudacodec. Video Encoding/Decoding
 - [ ] cudafeatures2d. Feature Detection and Description
 - [ ] cudafilters. Image Filtering
 - [ ] **cudaimgproc. Image Processing - WORK STARTED** The following functions still need implementation:
-<<<<<<< HEAD
-    - [X] [cv::cuda::CannyEdgeDetector](https://docs.opencv.org/master/d0/d43/classcv_1_1cuda_1_1CannyEdgeDetector.html)
     - [ ] [cv::cuda::TemplateMatching](https://docs.opencv.org/master/d2/d58/classcv_1_1cuda_1_1TemplateMatching.html)
     - [ ] [cv::cuda::alphaComp](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#ga08a698700458d9311390997b57fbf8dc)
-    - [X] [cv::cuda::cvtColor](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#ga48d0f208181d5ca370d8ff6b62cbe826)
-=======
-    - [ ] [cv::cuda::TemplateMatching](https://docs.opencv.org/master/d2/d58/classcv_1_1cuda_1_1TemplateMatching.html)
-    - [ ] [cv::cuda::alphaComp](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#ga08a698700458d9311390997b57fbf8dc)
->>>>>>> upstream/release
     - [ ] [cv::cuda::demosaicing](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#ga7fb153572b573ebd2d7610fcbe64166e)
     - [ ] [cv::cuda::gammaCorrection](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#gaf4195a8409c3b8fbfa37295c2b2c4729)
     - [ ] [cv::cuda::swapChannels](https://docs.opencv.org/master/db/d8c/group__cudaimgproc__color.html#ga75a29cc4a97cde0d43ea066b01de927e)

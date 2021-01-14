@@ -293,7 +293,6 @@ func ReadNetFromTensorflowBytes(model []byte) (Net, error) {
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromTensorflowBytes(*bModel))}, nil
 }
 
-<<<<<<< HEAD
 func ReadNetFromDarknet(config string, weights string) Net {
 	cfg := C.CString(config)
 	defer C.free(unsafe.Pointer(cfg))
@@ -315,8 +314,6 @@ func ReadNetFromDarknetBytes(config []byte, weights []byte) (Net, error) {
 	return Net{p: unsafe.Pointer(C.Net_ReadNetFromDarknetBytes(*cfg, *model))}, nil
 }
 
-=======
->>>>>>> upstream/release
 // ReadNetFromTorch reads a network model stored in Torch framework's format (t7).
 //   check net.Empty() for read failure
 //
@@ -545,11 +542,7 @@ func (l *Layer) OutputNameToIndex(name string) int {
 //
 // For futher details, please see:
 // https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
-<<<<<<< HEAD
-func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32) (indices []int) {
-=======
 func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int) {
->>>>>>> upstream/release
 	bboxesRectArr := []C.struct_Rect{}
 	for _, v := range bboxes {
 		bbox := C.struct_Rect{
@@ -587,10 +580,6 @@ func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32
 
 	ptr := *(*[]C.int)(unsafe.Pointer(h))
 
-<<<<<<< HEAD
-	indices = make([]int, int(indicesVector.length))
-=======
->>>>>>> upstream/release
 	for i := 0; i < int(indicesVector.length); i++ {
 		indices[i] = int(ptr[i])
 	}
@@ -601,11 +590,7 @@ func NMSBoxes(bboxes []image.Rectangle, scores []float32, scoreThreshold float32
 //
 // For futher details, please see:
 // https://docs.opencv.org/4.4.0/d6/d0f/group__dnn.html#ga9d118d70a1659af729d01b10233213ee
-<<<<<<< HEAD
-func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, eta float32, topK int) (indices []int) {
-=======
 func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThreshold float32, nmsThreshold float32, indices []int, eta float32, topK int) {
->>>>>>> upstream/release
 	bboxesRectArr := []C.struct_Rect{}
 	for _, v := range bboxes {
 		bbox := C.struct_Rect{
@@ -643,10 +628,6 @@ func NMSBoxesWithParams(bboxes []image.Rectangle, scores []float32, scoreThresho
 
 	ptr := *(*[]C.int)(unsafe.Pointer(h))
 
-<<<<<<< HEAD
-	indices = make([]int, int(indicesVector.length))
-=======
->>>>>>> upstream/release
 	for i := 0; i < int(indicesVector.length); i++ {
 		indices[i] = int(ptr[i])
 	}

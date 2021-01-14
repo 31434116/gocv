@@ -2,11 +2,7 @@
 .PHONY: test deps download build clean astyle cmds docker
 
 # OpenCV version to use.
-<<<<<<< HEAD
-OPENCV_VERSION?=4.5.0
-=======
 OPENCV_VERSION?=4.5.1
->>>>>>> upstream/release
 
 # Go version to use when building Docker image
 GOVERSION?=1.15.3
