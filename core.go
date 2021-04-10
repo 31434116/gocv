@@ -2472,6 +2472,7 @@ func Cholesky(a *Mat, b *Mat) bool {
 		return bool(C.Mat_CholeskyDouble(a.p, nil))
 	}
 	return false
+}
 // RNG Random Number Generator.
 // It encapsulates the state (currently, a 64-bit integer) and
 // has methods to return scalar random values and to fill arrays

@@ -1057,11 +1057,6 @@ Mat Mat_col(Mat m, int col)
     return new cv::Mat(m->col(col));
 }
 
-void IntVector_Close(struct IntVector ivec)
-{
-    delete[] ivec.val;
-}
-
 void FloatVector_Close(struct FloatVector fvec)
 {
     delete[] fvec.val;
