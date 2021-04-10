@@ -44,199 +44,189 @@ extern "C"
 {
 #endif
 
-    typedef struct RawData
-    {
-        int width;
-        int height;
-        struct ByteArray data;
-    } RawData;
+typedef struct RawData {
+    int width;
+    int height;
+    struct ByteArray data;
+} RawData;
 
-    // Wrapper for an individual cv::Point2f
-    typedef struct Point2f
-    {
-        float x;
-        float y;
-    } Point2f;
+// Wrapper for an individual cv::Point2f
+typedef struct Point2f {
+    float x;
+    float y;
+} Point2f;
 
-    // Wrapper for an individual cv::cvPoint
-    typedef struct Point
-    {
-        int x;
-        int y;
-    } Point;
+// Wrapper for an individual cv::cvPoint
+typedef struct Point {
+    int x;
+    int y;
+} Point;
 
-    // Wrapper for the vector of Point structs aka std::vector<Point>
-    typedef struct Points
-    {
-        Point *points;
-        int length;
-    } Points;
+// Wrapper for the vector of Point structs aka std::vector<Point>
+typedef struct Points {
+    Point* points;
+    int length;
+} Points;
 
-    // Wrapper for the vector of Point2f structs aka std::vector<Point2f>
-    typedef struct Points2f
-    {
-        Point2f *points;
-        int length;
-    } Points2f;
+// Wrapper for the vector of Point2f structs aka std::vector<Point2f>
+typedef struct Points2f {
+    Point2f* points;
+    int length;
+} Points2f;
 
-    // Contour is alias for Points
-    typedef Points Contour;
+// Contour is alias for Points
+typedef Points Contour;
 
-    // Contour2f is alias for Points2f
-    typedef Points2f Contour2f;
+// Contour2f is alias for Points2f
+typedef Points2f Contour2f;
 
-    // Wrapper for the vector of Points vectors aka std::vector< std::vector<Point> >
-    typedef struct Contours
-    {
-        Contour *contours;
-        int length;
-    } Contours;
+// Wrapper for the vector of Points vectors aka std::vector< std::vector<Point> >
+typedef struct Contours {
+    Contour* contours;
+    int length;
+} Contours;
 
-    // Wrapper for an individual cv::cvRect
-    typedef struct Rect
-    {
-        int x;
-        int y;
-        int width;
-        int height;
-    } Rect;
+// Wrapper for an individual cv::cvRect
+typedef struct Rect {
+    int x;
+    int y;
+    int width;
+    int height;
+} Rect;
 
-    // Wrapper for the vector of Rect struct aka std::vector<Rect>
-    typedef struct Rects
-    {
-        Rect *rects;
-        int length;
-    } Rects;
+// Wrapper for the vector of Rect struct aka std::vector<Rect>
+typedef struct Rects {
+    Rect* rects;
+    int length;
+} Rects;
 
-    // Wrapper for an individual cv::cvSize
-    typedef struct Size
-    {
-        int width;
-        int height;
-    } Size;
+// Wrapper for an individual cv::cvSize
+typedef struct Size {
+    int width;
+    int height;
+} Size;
 
-    // Wrapper for an individual cv::RotatedRect
-    typedef struct RotatedRect
-    {
-        Contour pts;
-        Rect boundingRect;
-        Point center;
-        Size size;
-        double angle;
-    } RotatedRect;
+// Wrapper for an individual cv::RotatedRect
+typedef struct RotatedRect {
+    Points pts;
+    Rect boundingRect;
+    Point center;
+    Size size;
+    double angle;
+} RotatedRect;
 
-    // Wrapper for an individual cv::cvScalar
-    typedef struct Scalar
-    {
-        double val1;
-        double val2;
-        double val3;
-        double val4;
-    } Scalar;
+// Wrapper for an individual cv::cvScalar
+typedef struct Scalar {
+    double val1;
+    double val2;
+    double val3;
+    double val4;
+} Scalar;
 
-    // Wrapper for a individual cv::KeyPoint
-    typedef struct KeyPoint
-    {
-        double x;
-        double y;
-        double size;
-        double angle;
-        double response;
-        int octave;
-        int classID;
-    } KeyPoint;
+// Wrapper for a individual cv::KeyPoint
+typedef struct KeyPoint {
+    double x;
+    double y;
+    double size;
+    double angle;
+    double response;
+    int octave;
+    int classID;
+} KeyPoint;
 
-    // Wrapper for the vector of KeyPoint struct aka std::vector<KeyPoint>
-    typedef struct KeyPoints
-    {
-        KeyPoint *keypoints;
-        int length;
-    } KeyPoints;
+// Wrapper for the vector of KeyPoint struct aka std::vector<KeyPoint>
+typedef struct KeyPoints {
+    KeyPoint* keypoints;
+    int length;
+} KeyPoints;
 
-    // Wrapper for SimpleBlobDetectorParams aka SimpleBlobDetector::Params
-    typedef struct SimpleBlobDetectorParams
-    {
-        unsigned char blobColor;
-        bool filterByArea;
-        bool filterByCircularity;
-        bool filterByColor;
-        bool filterByConvexity;
-        bool filterByInertia;
-        float maxArea;
-        float maxCircularity;
-        float maxConvexity;
-        float maxInertiaRatio;
-        float maxThreshold;
-        float minArea;
-        float minCircularity;
-        float minConvexity;
-        float minDistBetweenBlobs;
-        float minInertiaRatio;
-        size_t minRepeatability;
-        float minThreshold;
-        float thresholdStep;
-    } SimpleBlobDetectorParams;
+// Wrapper for SimpleBlobDetectorParams aka SimpleBlobDetector::Params
+typedef struct SimpleBlobDetectorParams {
+    unsigned char   blobColor;
+    bool    filterByArea;
+    bool    filterByCircularity;
+    bool    filterByColor;
+    bool    filterByConvexity;
+    bool    filterByInertia;
+    float   maxArea;
+    float   maxCircularity;
+    float   maxConvexity;
+    float   maxInertiaRatio;
+    float   maxThreshold;
+    float   minArea;
+    float   minCircularity;
+    float   minConvexity;
+    float   minDistBetweenBlobs;
+    float   minInertiaRatio;
+    size_t  minRepeatability;
+    float   minThreshold;
+    float   thresholdStep;
+} SimpleBlobDetectorParams;
 
-    // Wrapper for an individual cv::DMatch
-    typedef struct DMatch
-    {
-        int queryIdx;
-        int trainIdx;
-        int imgIdx;
-        float distance;
-    } DMatch;
+// Wrapper for an individual cv::DMatch
+typedef struct DMatch {
+    int queryIdx;
+    int trainIdx;
+    int imgIdx;
+    float distance;
+} DMatch;
 
-    // Wrapper for the vector of DMatch struct aka std::vector<DMatch>
-    typedef struct DMatches
-    {
-        DMatch *dmatches;
-        int length;
-    } DMatches;
+// Wrapper for the vector of DMatch struct aka std::vector<DMatch>
+typedef struct DMatches {
+    DMatch* dmatches;
+    int length;
+} DMatches;
 
-    // Wrapper for the vector vector of DMatch struct aka std::vector<std::vector<DMatch>>
-    typedef struct MultiDMatches
-    {
-        DMatches *dmatches;
-        int length;
-    } MultiDMatches;
+// Wrapper for the vector vector of DMatch struct aka std::vector<std::vector<DMatch>>
+typedef struct MultiDMatches {
+    DMatches* dmatches;
+    int length;
+} MultiDMatches;
 
-    // Wrapper for an individual cv::Moment
-    typedef struct Moment
-    {
-        double m00;
-        double m10;
-        double m01;
-        double m20;
-        double m11;
-        double m02;
-        double m30;
-        double m21;
-        double m12;
-        double m03;
+// Wrapper for an individual cv::Moment
+typedef struct Moment {
+    double m00;
+    double m10;
+    double m01;
+    double m20;
+    double m11;
+    double m02;
+    double m30;
+    double m21;
+    double m12;
+    double m03;
 
-        double mu20;
-        double mu11;
-        double mu02;
-        double mu30;
-        double mu21;
-        double mu12;
-        double mu03;
+    double mu20;
+    double mu11;
+    double mu02;
+    double mu30;
+    double mu21;
+    double mu12;
+    double mu03;
 
-        double nu20;
-        double nu11;
-        double nu02;
-        double nu30;
-        double nu21;
-        double nu12;
-        double nu03;
-    } Moment;
+    double nu20;
+    double nu11;
+    double nu02;
+    double nu30;
+    double nu21;
+    double nu12;
+    double nu03;
+} Moment;
 
 #ifdef __cplusplus
-    typedef cv::Mat *Mat;
-    typedef cv::TermCriteria *TermCriteria;
+typedef cv::Mat* Mat;
+typedef cv::TermCriteria* TermCriteria;
+typedef cv::RNG* RNG;
+typedef std::vector< cv::Point >* PointVector;
+typedef std::vector< std::vector< cv::Point > >* PointsVector;
+typedef std::vector< cv::Point2f >* Point2fVector;
 #else
-typedef void *Mat;
-typedef void *TermCriteria;
+typedef void* Mat;
+typedef void* TermCriteria;
+typedef void* RNG;
+typedef void* PointVector;
+typedef void* PointsVector;
+typedef void* Point2fVector;
 #endif
 
 // Wrapper for the vector of Mat aka std::vector<Mat>
@@ -393,7 +383,7 @@ void Mat_InRangeWithScalar(Mat src, const Scalar lowerb, const Scalar upperb, Ma
 void Mat_InsertChannel(Mat src, Mat dst, int coi);
 double Mat_Invert(Mat src, Mat dst, int flags);
 double KMeans(Mat data, int k, Mat bestLabels, TermCriteria criteria, int attempts, int flags, Mat centers);
-double KMeansPoints(Contour points, int k, Mat bestLabels, TermCriteria criteria, int attempts, int flags, Mat centers);
+double KMeansPoints(PointVector pts, int k, Mat bestLabels, TermCriteria criteria, int attempts, int flags, Mat centers);
 void Mat_Log(Mat src, Mat dst);
 void Mat_Magnitude(Mat x, Mat y, Mat magnitude);
 void Mat_Max(Mat src1, Mat src2, Mat dst);
@@ -438,6 +428,26 @@ double GetTickFrequency();
 Mat Mat_rowRange(Mat m,int startrow,int endrow);
 Mat Mat_colRange(Mat m,int startrow,int endrow);
 
+PointVector PointVector_New();
+PointVector PointVector_NewFromPoints(Contour points);
+Point PointVector_At(PointVector pv, int idx);
+void PointVector_Append(PointVector pv, Point p);
+int PointVector_Size(PointVector pv);
+void PointVector_Close(PointVector pv);
+
+PointsVector PointsVector_New();
+PointsVector PointsVector_NewFromPoints(Contours points);
+PointVector PointsVector_At(PointsVector psv, int idx);
+void PointsVector_Append(PointsVector psv, PointVector pv);
+int PointsVector_Size(PointsVector psv);
+void PointsVector_Close(PointsVector psv);
+
+Point2fVector Point2fVector_New();
+void Point2fVector_Close(Point2fVector pfv);
+Point2fVector Point2fVector_NewFromPoints(Contour2f pts);
+Point2f Point2fVector_At(Point2fVector pfv, int idx);
+int Point2fVector_Size(Point2fVector pfv);
+
 void IntVector_Close(struct IntVector ivec);
 
 void CStrings_Close(struct CStrings cstrs);
@@ -452,6 +462,25 @@ Mat Mat_SimilarityTransform(Mat src, Mat dst);
 
 bool Mat_CholeskyFloat(Mat A, Mat b);
 bool Mat_CholeskyDouble(Mat A, Mat b);
+RNG TheRNG();
+
+void SetRNGSeed(int seed);
+
+void RNG_Fill(RNG rng, Mat mat, int distType, double a, double b, bool saturateRange);
+
+double RNG_Gaussian(RNG rng, double sigma);
+
+unsigned int RNG_Next(RNG rng);
+
+void RandN(Mat mat, Scalar mean, Scalar stddev);
+
+void RandShuffle(Mat mat);
+
+void RandShuffleWithParams(Mat mat, double iterFactor, RNG rng);
+
+void RandU(Mat mat, Scalar low, Scalar high);
+
+void copyPointVectorToPoint2fVector(PointVector src, Point2fVector dest);
 
 #ifdef __cplusplus
 }
